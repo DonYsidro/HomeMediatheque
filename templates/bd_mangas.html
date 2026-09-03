@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ t('titre_bd') }} - Médiathèque{% endblock %}
+{% block content %}
+<h1>{{ t('titre_bd') }}</h1>
+<p class="subtitle">{{ series|length }} {{ t('series_titre') }} · {{ nb_total }} {{ t('tomes_pluriel') }}</p>
+<p><a href="/bd-mangas/ajouter" class="btn">{{ t('ajouter_bd') }}</a></p>
+
+<div class="grid-medias">
+    {% for s in series %}
+    <a href="/bd-mangas/serie?serie={{ s.serie|urlencode }}" class="carte-media">
+        <div class="carte-affiche">
+            {% if s.couverture_url %}
+                <img src="{{ s.couverture_url }}" alt="{{ s.serie }}">
+            {% else %}
+                <span class="sans-affiche">📖</span>
+            {% endif %}
+        </div>
+        <div class="carte-info">
+            <div class="carte-titre">{{ s.serie }}</div>
+            <div class="carte-meta">{{ s.auteur }}</div>
+            <div class="carte-meta">{{ t('type_' + s.type) }}</div>
+            <div class="badge-lieu">
+                📚 {{ s.tomes_possedes }}{% if s.nb_tomes_serie %}/{{ s.nb_tomes_serie }}{% endif %} {{ t('tomes_pluriel') }}
+            </div>
+            {% if s.un_prete %}
+                <div class="badge-prete">{{ t('prete') }}</div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

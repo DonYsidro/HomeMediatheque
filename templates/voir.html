@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ media.titre }} - Médiathèque{% endblock %}
+{% block content %}
+<p><a href="/films" class="lien-discret">{{ t('retour') }}</a></p>
+<div class="carte-media" style="max-width:500px; cursor:default;">
+    <div class="carte-affiche" style="aspect-ratio:2/3; max-height:400px;">
+        {% if media.affiche_url %}
+            <img src="{{ media.affiche_url }}" alt="{{ media.titre }}">
+        {% else %}
+            <span class="sans-affiche">🎬</span>
+        {% endif %}
+    </div>
+</div>
+<h1 style="margin-top:20px;">{{ media.titre }}</h1>
+<p class="subtitle">
+    {{ t('type_' + media.type) }}{% if media.annee %} · {{ media.annee }}{% endif %}
+    {% if media.age_classification %} · {{ media.age_classification }}{% endif %}
+</p>
+<p>
+    {% if media.duree_minutes %}⏱ {{ media.duree_minutes }} min &nbsp;{% endif %}
+    {% if media.nb_saisons %}📺 {{ media.nb_saisons }} {{ t('nb_saisons')|lower }} &nbsp;{% endif %}
+    {% if media.nb_episodes %}🎞 {{ media.nb_episodes }} {{ t('nb_episodes')|lower }}{% endif %}
+</p>
+{% if genres %}<p>🎭 {{ t('genres_label') }} : {{ genres|join(', ') }}</p>{% endif %}
+{% if realisateurs %}<p>🎬 {{ t('realisateurs_label') }} : {{ realisateurs|join(', ') }}</p>{% endif %}
+{% if acteurs %}<p>👥 {{ t('acteurs_label') }} : {{ acteurs|join(', ') }}</p>{% endif %}
+{% if compositeurs %}<p>🎵 {{ t('compositeurs_label') }} : {{ compositeurs|join(', ') }}</p>{% endif %}
+{% if media.synopsis %}<p>{{ media.synopsis }}</p>{% endif %}
+<p>📍 {{ media.lieu_stockage }}{% if media.support %} ({{ media.support }}){% endif %}</p>
+<p>
+    {% if media.est_prete %}
+        <span class="badge-prete">{{ t('prete') }}{% if media.prete_a %} {{ t('a_prefixe') }} {{ media.prete_a }}{% endif %}</span>
+    {% else %}
+        <span class="badge-dispo">{{ t('disponible') }}</span>
+    {% endif %}
+</p>
+<a href="/modifier/{{ media.id }}" class="btn">✏️ {{ t('modifier') }}</a>
+{% endblock %}

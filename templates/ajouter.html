@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}{{ t('ajouter_bouton') }} - {{ t('titre_films') }}{% endblock %}
+{% block content %}
+<h1>{{ t('ajouter_bouton') }} - {{ t('type_film') }}</h1>
+<form method="POST" action="/ajouter" enctype="multipart/form-data">
+    <label>{{ t('titre_champ') }} * <input type="text" name="titre" id="champ-titre" required></label>
+    <button type="button" onclick="chercherTMDB()">{{ t('chercher_infos') }}</button>
+    <span id="statut-recherche"></span>
+
+    <label>{{ t('type_champ') }} *
+        <select name="type" required>
+            <option value="film">{{ t('type_film') }}</option>
+            <option value="serie">{{ t('type_serie') }}</option>
+            <option value="coffret">{{ t('type_coffret') }}</option>
+        </select>
+    </label>
+
+    <label>{{ t('annee') }} <input type="number" name="annee"></label>
+    <label>{{ t('age_classification') }} <input type="text" name="age_classification" placeholder="Tous publics, 12+, 16+..."></label>
+    <label>{{ t('duree_minutes') }} <input type="number" name="duree_minutes"></label>
+    <label>{{ t('nb_episodes') }} <input type="number" name="nb_episodes"></label>
+    <label>{{ t('nb_saisons') }} <input type="number" name="nb_saisons"></label>
+    <label>{{ t('synopsis') }} <textarea name="synopsis"></textarea></label>
+
+    <label>{{ t('url_affiche') }} <input type="text" name="affiche_url" id="champ-affiche"></label>
+    <button type="button" onclick="chercherAffiches()">{{ t('choisir_affiche') }}</button>
+    <div id="galerie-affiches" style="display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0;"></div>
+
+    <label>{{ t('code_barre') }} <input type="text" name="code_barre"></label>
+    <label>{{ t('photo_upload') }} <input type="file" name="photo" accept="image/*" capture="environment"></label>
+    <label>{{ t('lieu_stockage') }} * <input type="text" name="lieu_stockage" required></label>
+    <label>{{ t('support') }} <input type="text" name="support" placeholder="DVD, Blu-ray, NAS..."></label>
+
+    <label>{{ t('fait_partie_coffret') }}
+        <select name="coffret_id">
+            <option value="">{{ t('aucun') }}</option>
+            {% for c in coffrets %}
+            <option value="{{ c.id }}">{{ c.titre }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <label>{{ t('genres_virgules') }} <input type="text" name="genres" placeholder="Action, Aventure"></label>
+    <label>{{ t('realisateurs') }} <input type="text" name="realisateurs"></label>
+    <label>{{ t('acteurs') }} <input type="text" name="acteurs"></label>
+    <label>{{ t('compositeurs') }} <input type="text" name="compositeurs"></label>
+
+    <button type="submit">{{ t('ajouter_bouton') }}</button>
+</form>
+
+<script>
+async function chercherTMDB() {
+    const titre = document.getElementById("champ-titre").value.trim();
+    const statut = document.getElementById("statut-recherche");
+    if (!titre) { statut.textContent = "Saisis d'abord un titre."; return; }
+    statut.textContent = "Recherche en cours...";
+    try {
+        const resp = await fetch(`/api/tmdb_search?titre=${encodeURIComponent(titre)}`);
+        const data = await resp.json();
+        if (!resp.ok) { statut.textContent = data.erreur || "Erreur de recherche."; return; }
+        document.getElementById("champ-titre").value = data.titre || titre;
+        document.querySelector('[name="type"]').value = data.type || "film";
+        document.querySelector('[name="annee"]').value = data.annee || "";
+        document.querySelector('[name="duree_minutes"]').value = data.duree_minutes || "";
+        document.querySelector('[name="nb_episodes"]').value = data.nb_episodes || "";
+        document.querySelector('[name="nb_saisons"]').value = data.nb_saisons || "";
+        document.querySelector('[name="synopsis"]').value = data.synopsis || "";
+        document.getElementById("champ-affiche").value = data.affiche_url || "";
+        document.querySelector('[name="genres"]').value = data.genres || "";
+        document.querySelector('[name="realisateurs"]').value = data.realisateurs || "";
+        document.querySelector('[name="acteurs"]').value = data.acteurs || "";
+        document.querySelector('[name="compositeurs"]').value = data.compositeurs || "";
+        statut.textContent = "✓ Infos trouvées, vérifie et complète si besoin.";
+    } catch (err) {
+        statut.textContent = "Erreur de connexion à l'API.";
+    }
+}
+
+async function chercherAffiches() {
+    const titre = document.getElementById("champ-titre").value.trim();
+    const galerie = document.getElementById("galerie-affiches");
+    if (!titre) { document.getElementById("statut-recherche").textContent = "Saisis d'abord un titre."; return; }
+    galerie.innerHTML = "Recherche d'affiches...";
+    try {
+        const resp = await fetch(`/api/tmdb_couvertures?titre=${encodeURIComponent(titre)}`);
+        const data = await resp.json();
+        if (!resp.ok) { galerie.innerHTML = data.erreur || "Aucune affiche trouvée."; return; }
+        galerie.innerHTML = "";
+        data.resultats.forEach(r => {
+            const img = document.createElement("img");
+            img.src = r.affiche_url;
+            img.title = r.titre + (r.annee ? " (" + r.annee + ")" : "");
+            img.style = "height:150px; cursor:pointer; border-radius:6px; border:2px solid var(--border);";
+            img.onclick = () => {
+                document.getElementById("champ-affiche").value = r.affiche_url;
+                document.querySelectorAll("#galerie-affiches img").forEach(el => el.style.borderColor = "var(--border)");
+                img.style.borderColor = "var(--accent)";
+            };
+            galerie.appendChild(img);
+        });
+    } catch (err) {
+        galerie.innerHTML = "Erreur de connexion à l'API.";
+    }
+}
+</script>
+{% endblock %}

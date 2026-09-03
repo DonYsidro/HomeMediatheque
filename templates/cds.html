@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ t('titre_cds') }} - Médiathèque{% endblock %}
+{% block content %}
+<h1>{{ t('titre_cds') }}</h1>
+<p class="subtitle">{{ artistes|length }} {{ t('artiste') }} · {{ nb_total }} {{ t('albums_pluriel') }}</p>
+<p><a href="/cds/ajouter" class="btn">{{ t('ajouter_cd') }}</a></p>
+
+{% if artistes %}
+<div class="grid-medias">
+    {% for a in artistes %}
+    <a href="/cds/artiste?artiste={{ a.artiste|urlencode }}" class="carte-media">
+        <div class="carte-affiche">
+            {% if a.pochette_url %}
+                <img src="{{ a.pochette_url }}" alt="{{ a.artiste }}">
+            {% else %}
+                <span class="sans-affiche">💿</span>
+            {% endif %}
+        </div>
+        <div class="carte-info">
+            <div class="carte-titre">{{ a.artiste }}</div>
+            <div class="badge-lieu">💿 {{ a.albums }} {{ t('albums_pluriel') }}</div>
+            {% if a.un_prete %}<div class="badge-prete">{{ t('prete') }}</div>{% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if cds_sans_artiste %}
+<h2 style="font-family: var(--font-display); margin-top: 24px;">{{ t('albums_pluriel')|capitalize }}</h2>
+<div class="grid-medias">
+    {% for c in cds_sans_artiste %}
+    <a href="/cds/voir/{{ c.id }}" class="carte-media">
+        <div class="carte-affiche">
+            {% if c.pochette_url %}
+                <img src="{{ c.pochette_url }}" alt="{{ c.titre }}">
+            {% else %}
+                <span class="sans-affiche">💿</span>
+            {% endif %}
+        </div>
+        <div class="carte-info">
+            <div class="carte-titre">{{ c.titre }}</div>
+            <div class="badge-lieu">📍 {{ c.lieu_stockage }}</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

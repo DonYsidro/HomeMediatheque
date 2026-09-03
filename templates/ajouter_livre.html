@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Ajouter un livre{% endblock %}
+{% block content %}
+<h1>Ajouter un livre</h1>
+<form method="POST" action="/livres/ajouter" enctype="multipart/form-data">
+    <label>Titre * <input type="text" name="titre" id="champ-titre" required></label>
+    <label>ISBN (optionnel, recherche plus précise) <input type="text" name="isbn" id="champ-isbn"></label>
+    <button type="button" onclick="chercherGoogleBooks()">🔍 Chercher les infos</button>
+    <button type="button" onclick="demarrerScanner()">📷 Scanner le code-barre</button>
+    <span id="statut-recherche"></span>
+
+    <div id="zone-scanner" style="display:none; max-width: 400px; margin: 12px 0;"></div>
+
+    <label>Type *
+        <select name="sous_type" required>
+            <option value="roman">Roman</option>
+            <option value="collection">Collection</option>
+            <option value="cuisine">Cuisine</option>
+            <option value="educatif">Éducatif</option>
+        </select>
+    </label>
+
+    <label>Série (optionnel, laisser vide si livre indépendant) <input type="text" name="serie"></label>
+    <label>Numéro de tome (optionnel) <input type="number" name="numero_tome"></label>
+
+    <label>Auteur <input type="text" name="auteur"></label>
+    <label>Année <input type="number" name="annee"></label>
+    <label>Éditeur <input type="text" name="editeur"></label>
+    <label>Nombre de pages <input type="number" name="nb_pages"></label>
+    <label>Langue <input type="text" name="langue" placeholder="fr, en, ja..."></label>
+    <label>Synopsis <textarea name="synopsis"></textarea></label>
+
+    <label>URL de la couverture <input type="text" name="couverture_url" id="champ-couverture"></label>
+    <button type="button" onclick="chercherCouvertures()">🖼️ Choisir une couverture</button>
+    <div id="galerie-couvertures" style="display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0;"></div>
+
+        <label>📷 Prendre / importer une photo <input type="file" name="photo" accept="image/*" capture="environment"></label>
+
+<label>Lieu de stockage * <input type="text" name="lieu_stockage" required></label>
+
+    <button type="submit">Ajouter</button>
+</form>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+async function chercherGoogleBooks() {
+    const titre = document.getElementById("champ-titre").value.trim();
+    const isbn = document.getElementById("champ-isbn").value.trim();
+    const statut = document.getElementById("statut-recherche");
+    if (!titre && !isbn) { statut.textContent = "Saisis un titre ou un ISBN."; return; }
+    statut.textContent = "Recherche en cours...";
+    try {
+        const params = isbn ? `isbn=${encodeURIComponent(isbn)}` : `titre=${encodeURIComponent(titre)}`;
+        const resp = await fetch(`/api/googlebooks_search?${params}`);
+        const data = await resp.json();
+        if (!resp.ok) { statut.textContent = data.erreur || "Erreur de recherche."; return; }
+        document.getElementById("champ-titre").value = data.titre || titre;
+        document.getElementById("champ-isbn").value = data.isbn || isbn;
+        document.querySelector('[name="auteur"]').value = data.auteur || "";
+        document.querySelector('[name="annee"]').value = data.annee || "";
+        document.querySelector('[name="editeur"]').value = data.editeur || "";
+        document.querySelector('[name="nb_pages"]').value = data.nb_pages || "";
+        document.querySelector('[name="langue"]').value = data.langue || "";
+        document.querySelector('[name="synopsis"]').value = data.synopsis || "";
+        document.getElementById("champ-couverture").value = data.couverture_url || "";
+        statut.textContent = "✓ Infos trouvées, vérifie et complète si besoin (le type roman/cuisine/éducatif n'est pas deviné automatiquement).";
+    } catch (err) {
+        statut.textContent = "Erreur de connexion à l'API.";
+    }
+}
+
+async function chercherCouvertures() {
+    const titre = document.getElementById("champ-titre").value.trim();
+    const galerie = document.getElementById("galerie-couvertures");
+    if (!titre) { document.getElementById("statut-recherche").textContent = "Saisis d'abord un titre."; return; }
+    galerie.innerHTML = "Recherche de couvertures...";
+    try {
+        const resp = await fetch(`/api/googlebooks_couvertures?titre=${encodeURIComponent(titre)}`);
+        const data = await resp.json();
+        if (!resp.ok) { galerie.innerHTML = data.erreur || "Aucune couverture trouvée."; return; }
+        galerie.innerHTML = "";
+        data.resultats.forEach(r => {
+            const img = document.createElement("img");
+            img.src = r.couverture_url;
+            img.title = r.titre + (r.auteur ? " - " + r.auteur : "");
+            img.style = "height:120px; cursor:pointer; border-radius:6px; border:2px solid var(--border);";
+            img.onclick = () => {
+                document.getElementById("champ-couverture").value = r.couverture_url;
+                document.querySelectorAll("#galerie-couvertures img").forEach(el => el.style.borderColor = "var(--border)");
+                img.style.borderColor = "var(--accent)";
+            };
+            galerie.appendChild(img);
+        });
+    } catch (err) {
+        galerie.innerHTML = "Erreur de connexion à l'API.";
+    }
+}
+
+let scannerActif = null;
+
+function demarrerScanner() {
+    const zone = document.getElementById("zone-scanner");
+    zone.style.display = "block";
+    zone.innerHTML = '<div id="lecteur-scan"></div>';
+
+    scannerActif = new Html5Qrcode("lecteur-scan", {
+        formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8]
+    });
+
+    scannerActif.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 100 } },
+        (codeDetecte) => {
+            document.getElementById("champ-isbn").value = codeDetecte;
+            arreterScanner();
+            chercherGoogleBooks();
+        },
+        () => {}
+    ).catch((err) => {
+        document.getElementById("statut-recherche").textContent = "Impossible d'accéder à la caméra : " + err;
+    });
+}
+
+function arreterScanner() {
+    if (scannerActif) {
+        scannerActif.stop().then(() => {
+            document.getElementById("zone-scanner").style.display = "none";
+        });
+    }
+}
+</script>
+{% endblock %}

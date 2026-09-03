@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ item.titre }} - Médiathèque{% endblock %}
+{% block content %}
+<p><a href="/bd-mangas" class="lien-discret">{{ t('retour') }}</a></p>
+<div class="carte-media" style="max-width:500px; cursor:default;">
+    <div class="carte-affiche" style="aspect-ratio:2/3; max-height:400px;">
+        {% if item.couverture_url %}
+            <img src="{{ item.couverture_url }}" alt="{{ item.titre }}">
+        {% else %}
+            <span class="sans-affiche">📖</span>
+        {% endif %}
+    </div>
+</div>
+<h1 style="margin-top:20px;">{{ item.serie }}{% if item.titre %} - {{ item.titre }}{% endif %}</h1>
+<p class="subtitle">
+    {{ item.auteur }}{% if item.annee %} · {{ item.annee }}{% endif %} · {{ t('type_' + item.type) }}
+    {% if item.numero_tome %} · {{ t('numero_tome') }} {{ item.numero_tome }}{% endif %}
+</p>
+<p>
+    {% if item.editeur %}🏢 {{ item.editeur }} &nbsp;{% endif %}
+    {% if item.langue %}🌐 {{ item.langue }} &nbsp;{% endif %}
+    {% if item.isbn %}ISBN {{ item.isbn }}{% endif %}
+</p>
+{% if item.synopsis %}<p>{{ item.synopsis }}</p>{% endif %}
+<p>📍 {{ item.lieu_stockage }}</p>
+<p>
+    {% if item.est_prete %}
+        <span class="badge-prete">{{ t('prete') }}{% if item.prete_a %} {{ t('a_prefixe') }} {{ item.prete_a }}{% endif %}</span>
+    {% else %}
+        <span class="badge-dispo">{{ t('disponible') }}</span>
+    {% endif %}
+</p>
+<a href="/bd-mangas/modifier/{{ item.id }}" class="btn">✏️ {{ t('modifier') }}</a>
+{% endblock %}

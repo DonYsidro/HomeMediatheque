@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ t('accueil') }} - Médiathèque{% endblock %}
+{% block content %}
+<h1>{{ t('titre_hub') }}</h1>
+<p class="subtitle">{{ t('choisir_collection') }}</p>
+<div class="grid-hub">
+    <a href="/films" class="carte-hub">
+        <span class="hub-icone">🎬</span>
+        <span class="hub-titre">{{ t('films') }}</span>
+        <span class="hub-compte">{{ nb_films }} {{ t('medias_pluriel') }}</span>
+    </a>
+    <a href="/cds" class="carte-hub">
+        <span class="hub-icone">💿</span>
+        <span class="hub-titre">{{ t('cds') }}</span>
+        <span class="hub-compte">{{ nb_cds }} {{ t('albums_pluriel') }}</span>
+    </a>
+    <a href="/livres" class="carte-hub">
+        <span class="hub-icone">📚</span>
+        <span class="hub-titre">{{ t('livres') }}</span>
+        <span class="hub-compte">{{ nb_livres }} {{ t('livres_pluriel') }}</span>
+    </a>
+    <a href="/bd-mangas" class="carte-hub">
+        <span class="hub-icone">📖</span>
+        <span class="hub-titre">{{ t('bd_mangas') }}</span>
+        <span class="hub-compte">{{ nb_bd }} {{ t('tomes_pluriel') }}</span>
+    </a>
+</div>
+{% endblock %}

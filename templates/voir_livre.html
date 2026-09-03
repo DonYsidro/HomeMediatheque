@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ livre.titre }} - Médiathèque{% endblock %}
+{% block content %}
+<p><a href="/livres" class="lien-discret">{{ t('retour') }}</a></p>
+<div class="carte-media" style="max-width:500px; cursor:default;">
+    <div class="carte-affiche" style="aspect-ratio:2/3; max-height:400px;">
+        {% if livre.couverture_url %}
+            <img src="{{ livre.couverture_url }}" alt="{{ livre.titre }}">
+        {% else %}
+            <span class="sans-affiche">📚</span>
+        {% endif %}
+    </div>
+</div>
+<h1 style="margin-top:20px;">{{ livre.titre }}</h1>
+<p class="subtitle">
+    {{ livre.auteur }}{% if livre.annee %} · {{ livre.annee }}{% endif %} · {{ t('type_' + livre.sous_type) }}
+    {% if livre.serie %} · {{ t('serie_champ') }} : {{ livre.serie }}{% if livre.numero_tome %} (T.{{ livre.numero_tome }}){% endif %}{% endif %}
+</p>
+<p>
+    {% if livre.editeur %}🏢 {{ livre.editeur }} &nbsp;{% endif %}
+    {% if livre.nb_pages %}📄 {{ livre.nb_pages }} p. &nbsp;{% endif %}
+    {% if livre.langue %}🌐 {{ livre.langue }} &nbsp;{% endif %}
+    {% if livre.isbn %}ISBN {{ livre.isbn }}{% endif %}
+</p>
+{% if livre.synopsis %}<p>{{ livre.synopsis }}</p>{% endif %}
+<p>📍 {{ livre.lieu_stockage }}</p>
+<p>
+    {% if livre.est_prete %}
+        <span class="badge-prete">{{ t('prete') }}{% if livre.prete_a %} {{ t('a_prefixe') }} {{ livre.prete_a }}{% endif %}</span>
+    {% else %}
+        <span class="badge-dispo">{{ t('disponible') }}</span>
+    {% endif %}
+</p>
+<a href="/livres/modifier/{{ livre.id }}" class="btn">✏️ {{ t('modifier') }}</a>
+{% endblock %}

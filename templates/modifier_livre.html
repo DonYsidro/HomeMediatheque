@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ t('modifier') }} - {{ livre.titre }}{% endblock %}
+{% block content %}
+<h1>{{ t('modifier') }} : {{ livre.titre }}</h1>
+<form method="POST" action="/livres/modifier/{{ livre.id }}" enctype="multipart/form-data">
+    <label>{{ t('titre_champ') }} * <input type="text" name="titre" id="champ-titre" value="{{ livre.titre }}" required></label>
+
+    <label>{{ t('type_champ') }} *
+        <select name="sous_type" required>
+            <option value="roman" {% if livre.sous_type == 'roman' %}selected{% endif %}>{{ t('type_roman') }}</option>
+            <option value="collection" {% if livre.sous_type == 'collection' %}selected{% endif %}>{{ t('type_collection') }}</option>
+            <option value="cuisine" {% if livre.sous_type == 'cuisine' %}selected{% endif %}>{{ t('type_cuisine') }}</option>
+            <option value="educatif" {% if livre.sous_type == 'educatif' %}selected{% endif %}>{{ t('type_educatif') }}</option>
+        </select>
+    </label>
+
+    <label>{{ t('serie_champ') }} <input type="text" name="serie" value="{{ livre.serie or '' }}"></label>
+    <label>{{ t('numero_tome') }} <input type="number" name="numero_tome" value="{{ livre.numero_tome or '' }}"></label>
+
+    <label>{{ t('auteur') }} <input type="text" name="auteur" value="{{ livre.auteur or '' }}"></label>
+    <label>{{ t('annee') }} <input type="number" name="annee" value="{{ livre.annee or '' }}"></label>
+    <label>{{ t('editeur') }} <input type="text" name="editeur" value="{{ livre.editeur or '' }}"></label>
+    <label>{{ t('nb_pages') }} <input type="number" name="nb_pages" value="{{ livre.nb_pages or '' }}"></label>
+    <label>{{ t('isbn') }} <input type="text" name="isbn" value="{{ livre.isbn or '' }}"></label>
+    <label>{{ t('langue_champ') }} <input type="text" name="langue" value="{{ livre.langue or '' }}"></label>
+    <label>{{ t('synopsis') }} <textarea name="synopsis">{{ livre.synopsis or '' }}</textarea></label>
+
+    <label>{{ t('url_couverture') }} <input type="text" name="couverture_url" id="champ-couverture" value="{{ livre.couverture_url or '' }}"></label>
+    <button type="button" onclick="chercherCouvertures()">{{ t('choisir_couverture') }}</button>
+    <div id="galerie-couvertures" style="display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0;"></div>
+
+    <label>{{ t('photo_upload') }} <input type="file" name="photo" accept="image/*" capture="environment"></label>
+    <label>{{ t('lieu_stockage') }} * <input type="text" name="lieu_stockage" value="{{ livre.lieu_stockage }}" required></label>
+
+    <hr>
+    <label>
+        <input type="checkbox" name="est_prete" value="1" {% if livre.est_prete %}checked{% endif %}>
+        {{ t('actuellement_prete') }}
+    </label>
+    <label>{{ t('prete_a') }} <input type="text" name="prete_a" value="{{ livre.prete_a or '' }}"></label>
+    <label>{{ t('date_pret') }} <input type="date" name="date_pret" value="{{ livre.date_pret or '' }}"></label>
+
+    <button type="submit">{{ t('enregistrer') }}</button>
+</form>
+
+<form method="POST" action="/livres/supprimer/{{ livre.id }}" onsubmit="return confirm('{{ t('confirmer_suppression') }}');" style="margin-top: 16px;">
+    <button type="submit" class="btn-danger">{{ t('supprimer') }}</button>
+</form>
+
+<script>
+async function chercherCouvertures() {
+    const titre = document.getElementById("champ-titre").value.trim();
+    const galerie = document.getElementById("galerie-couvertures");
+    if (!titre) { alert("Saisis d'abord un titre."); return; }
+    galerie.innerHTML = "Recherche de couvertures...";
+    try {
+        const resp = await fetch(`/api/googlebooks_couvertures?titre=${encodeURIComponent(titre)}`);
+        const data = await resp.json();
+        if (!resp.ok) { galerie.innerHTML = data.erreur || "Aucune couverture trouvée."; return; }
+        galerie.innerHTML = "";
+        data.resultats.forEach(r => {
+            const img = document.createElement("img");
+            img.src = r.couverture_url;
+            img.title = r.titre + (r.auteur ? " - " + r.auteur : "");
+            img.style = "height:120px; cursor:pointer; border-radius:6px; border:2px solid var(--border);";
+            img.onclick = () => {
+                document.getElementById("champ-couverture").value = r.couverture_url;
+                document.querySelectorAll("#galerie-couvertures img").forEach(el => el.style.borderColor = "var(--border)");
+                img.style.borderColor = "var(--accent)";
+            };
+            galerie.appendChild(img);
+        });
+    } catch (err) {
+        galerie.innerHTML = "Erreur de connexion à l'API.";
+    }
+}
+</script>
+{% endblock %}

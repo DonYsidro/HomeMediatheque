@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ t('modifier') }} - {{ item.titre }}{% endblock %}
+{% block content %}
+<h1>{{ t('modifier') }} : {{ item.titre }}</h1>
+<form method="POST" action="/bd-mangas/modifier/{{ item.id }}" enctype="multipart/form-data">
+    <label>{{ t('serie_champ') }} * <input type="text" name="serie" id="champ-serie" value="{{ item.serie or item.titre }}" required></label>
+    <label>{{ t('titre_du_tome') }} <input type="text" name="titre" id="champ-titre" value="{{ item.titre or '' }}"></label>
+
+    <label>{{ t('type_champ') }} *
+        <select name="type" required>
+            <option value="bd" {% if item.type == 'bd' %}selected{% endif %}>{{ t('type_bd') }}</option>
+            <option value="manga" {% if item.type == 'manga' %}selected{% endif %}>{{ t('type_manga') }}</option>
+        </select>
+    </label>
+
+    <label>{{ t('numero_tome') }} <input type="number" name="numero_tome" value="{{ item.numero_tome or '' }}"></label>
+    <label>{{ t('nb_tomes_serie') }} <input type="number" name="nb_tomes_serie" value="{{ item.nb_tomes_serie or '' }}"></label>
+    <label>{{ t('auteur') }} <input type="text" name="auteur" value="{{ item.auteur or '' }}"></label>
+    <label>{{ t('annee') }} <input type="number" name="annee" value="{{ item.annee or '' }}"></label>
+    <label>{{ t('editeur') }} <input type="text" name="editeur" value="{{ item.editeur or '' }}"></label>
+    <label>{{ t('isbn') }} <input type="text" name="isbn" value="{{ item.isbn or '' }}"></label>
+    <label>{{ t('langue_champ') }} <input type="text" name="langue" value="{{ item.langue or '' }}"></label>
+    <label>{{ t('synopsis') }} <textarea name="synopsis">{{ item.synopsis or '' }}</textarea></label>
+
+    <label>{{ t('url_couverture') }} <input type="text" name="couverture_url" id="champ-couverture" value="{{ item.couverture_url or '' }}"></label>
+    <button type="button" onclick="chercherCouvertures()">{{ t('choisir_couverture') }}</button>
+    <div id="galerie-couvertures" style="display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0;"></div>
+
+    <label>{{ t('photo_upload') }} <input type="file" name="photo" accept="image/*" capture="environment"></label>
+    <label>{{ t('lieu_stockage') }} * <input type="text" name="lieu_stockage" value="{{ item.lieu_stockage }}" required></label>
+
+    <hr>
+    <label>
+        <input type="checkbox" name="est_prete" value="1" {% if item.est_prete %}checked{% endif %}>
+        {{ t('actuellement_prete') }}
+    </label>
+    <label>{{ t('prete_a') }} <input type="text" name="prete_a" value="{{ item.prete_a or '' }}"></label>
+    <label>{{ t('date_pret') }} <input type="date" name="date_pret" value="{{ item.date_pret or '' }}"></label>
+
+    <button type="submit">{{ t('enregistrer') }}</button>
+</form>
+
+<form method="POST" action="/bd-mangas/supprimer/{{ item.id }}" onsubmit="return confirm('{{ t('confirmer_suppression') }}');" style="margin-top: 16px;">
+    <button type="submit" class="btn-danger">{{ t('supprimer') }}</button>
+</form>
+
+<script>
+async function chercherCouvertures() {
+    const titre = document.getElementById("champ-titre").value.trim() || document.getElementById("champ-serie").value.trim();
+    const galerie = document.getElementById("galerie-couvertures");
+    if (!titre) { alert("Saisis d'abord un titre ou une série."); return; }
+    galerie.innerHTML = "Recherche de couvertures...";
+    try {
+        const resp = await fetch(`/api/googlebooks_couvertures?titre=${encodeURIComponent(titre)}`);
+        const data = await resp.json();
+        if (!resp.ok) { galerie.innerHTML = data.erreur || "Aucune couverture trouvée."; return; }
+        galerie.innerHTML = "";
+        data.resultats.forEach(r => {
+            const img = document.createElement("img");
+            img.src = r.couverture_url;
+            img.title = r.titre + (r.auteur ? " - " + r.auteur : "");
+            img.style = "height:120px; cursor:pointer; border-radius:6px; border:2px solid var(--border);";
+            img.onclick = () => {
+                document.getElementById("champ-couverture").value = r.couverture_url;
+                document.querySelectorAll("#galerie-couvertures img").forEach(el => el.style.borderColor = "var(--border)");
+                img.style.borderColor = "var(--accent)";
+            };
+            galerie.appendChild(img);
+        });
+    } catch (err) {
+        galerie.innerHTML = "Erreur de connexion à l'API.";
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ t('modifier') }} - {{ media.titre }}{% endblock %}
+{% block content %}
+<h1>{{ t('modifier') }} : {{ media.titre }}</h1>
+<form method="POST" action="/modifier/{{ media.id }}" enctype="multipart/form-data">
+    <label>{{ t('titre_champ') }} * <input type="text" name="titre" value="{{ media.titre }}" required></label>
+
+    <label>{{ t('type_champ') }} *
+        <select name="type" required>
+            <option value="film" {% if media.type == 'film' %}selected{% endif %}>{{ t('type_film') }}</option>
+            <option value="serie" {% if media.type == 'serie' %}selected{% endif %}>{{ t('type_serie') }}</option>
+            <option value="coffret" {% if media.type == 'coffret' %}selected{% endif %}>{{ t('type_coffret') }}</option>
+        </select>
+    </label>
+
+    <label>{{ t('annee') }} <input type="number" name="annee" value="{{ media.annee or '' }}"></label>
+    <label>{{ t('age_classification') }} <input type="text" name="age_classification" value="{{ media.age_classification or '' }}"></label>
+    <label>{{ t('duree_minutes') }} <input type="number" name="duree_minutes" value="{{ media.duree_minutes or '' }}"></label>
+    <label>{{ t('nb_episodes') }} <input type="number" name="nb_episodes" value="{{ media.nb_episodes or '' }}"></label>
+    <label>{{ t('nb_saisons') }} <input type="number" name="nb_saisons" value="{{ media.nb_saisons or '' }}"></label>
+    <label>{{ t('synopsis') }} <textarea name="synopsis">{{ media.synopsis or '' }}</textarea></label>
+
+    <label>{{ t('url_affiche') }} <input type="text" name="affiche_url" id="champ-affiche" value="{{ media.affiche_url or '' }}"></label>
+    <button type="button" onclick="chercherAffiches()">{{ t('choisir_affiche') }}</button>
+    <div id="galerie-affiches" style="display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0;"></div>
+
+    <label>{{ t('code_barre') }} <input type="text" name="code_barre" value="{{ media.code_barre or '' }}"></label>
+    <label>{{ t('photo_upload') }} <input type="file" name="photo" accept="image/*" capture="environment"></label>
+    <label>{{ t('lieu_stockage') }} * <input type="text" name="lieu_stockage" value="{{ media.lieu_stockage }}" required></label>
+    <label>{{ t('support') }} <input type="text" name="support" value="{{ media.support or '' }}"></label>
+
+    <label>{{ t('fait_partie_coffret') }}
+        <select name="coffret_id">
+            <option value="">{{ t('aucun') }}</option>
+            {% for c in coffrets %}
+            <option value="{{ c.id }}" {% if media.coffret_id == c.id %}selected{% endif %}>{{ c.titre }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <label>{{ t('genres_virgules') }} <input type="text" name="genres" value="{{ genres_str }}"></label>
+    <label>{{ t('realisateurs') }} <input type="text" name="realisateurs" value="{{ realisateurs_str }}"></label>
+    <label>{{ t('acteurs') }} <input type="text" name="acteurs" value="{{ acteurs_str }}"></label>
+    <label>{{ t('compositeurs') }} <input type="text" name="compositeurs" value="{{ compositeurs_str }}"></label>
+
+    <hr>
+    <label>
+        <input type="checkbox" name="est_prete" value="1" {% if media.est_prete %}checked{% endif %}>
+        {{ t('actuellement_prete') }}
+    </label>
+    <label>{{ t('prete_a') }} <input type="text" name="prete_a" value="{{ media.prete_a or '' }}"></label>
+    <label>{{ t('date_pret') }} <input type="date" name="date_pret" value="{{ media.date_pret or '' }}"></label>
+
+    <button type="submit">{{ t('enregistrer') }}</button>
+</form>
+
+<form method="POST" action="/supprimer/{{ media.id }}" onsubmit="return confirm('{{ t('confirmer_suppression') }}');" style="margin-top: 16px;">
+    <button type="submit" class="btn-danger">{{ t('supprimer') }}</button>
+</form>
+
+<script>
+async function chercherAffiches() {
+    const titre = document.querySelector('[name="titre"]').value.trim();
+    const galerie = document.getElementById("galerie-affiches");
+    if (!titre) { alert("Saisis d'abord un titre."); return; }
+    galerie.innerHTML = "Recherche d'affiches...";
+    try {
+        const resp = await fetch(`/api/tmdb_couvertures?titre=${encodeURIComponent(titre)}`);
+        const data = await resp.json();
+        if (!resp.ok) { galerie.innerHTML = data.erreur || "Aucune affiche trouvée."; return; }
+        galerie.innerHTML = "";
+        data.resultats.forEach(r => {
+            const img = document.createElement("img");
+            img.src = r.affiche_url;
+            img.title = r.titre + (r.annee ? " (" + r.annee + ")" : "");
+            img.style = "height:150px; cursor:pointer; border-radius:6px; border:2px solid var(--border);";
+            img.onclick = () => {
+                document.getElementById("champ-affiche").value = r.affiche_url;
+                document.querySelectorAll("#galerie-affiches img").forEach(el => el.style.borderColor = "var(--border)");
+                img.style.borderColor = "var(--accent)";
+            };
+            galerie.appendChild(img);
+        });
+    } catch (err) {
+        galerie.innerHTML = "Erreur de connexion à l'API.";
+    }
+}
+</script>
+{% endblock %}

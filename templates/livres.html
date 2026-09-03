@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ t('titre_livres') }} - Médiathèque{% endblock %}
+{% block content %}
+<h1>{{ t('titre_livres') }}</h1>
+<p class="subtitle">{{ series|length }} {{ t('series_titre') }} · {{ livres|length }} {{ t('livres_independants') }}{% if sous_type_actif %} · {{ t('filtrer_par_type') }} : {{ t('type_' + sous_type_actif) }}{% endif %}</p>
+<p><a href="/livres/ajouter" class="btn">{{ t('ajouter_livre') }}</a></p>
+
+<form method="GET" action="/livres" style="max-width: 280px;">
+    <label>{{ t('filtrer_par_type') }}
+        <select name="sous_type" onchange="this.form.submit()">
+            <option value="">{{ t('tous') }}</option>
+            <option value="roman" {% if sous_type_actif == 'roman' %}selected{% endif %}>{{ t('type_roman') }}</option>
+            <option value="collection" {% if sous_type_actif == 'collection' %}selected{% endif %}>{{ t('type_collection') }}</option>
+            <option value="cuisine" {% if sous_type_actif == 'cuisine' %}selected{% endif %}>{{ t('type_cuisine') }}</option>
+            <option value="educatif" {% if sous_type_actif == 'educatif' %}selected{% endif %}>{{ t('type_educatif') }}</option>
+        </select>
+    </label>
+</form>
+
+{% if series %}
+<h2 style="font-family: var(--font-display); margin-top: 24px;">{{ t('series_titre') }}</h2>
+<div class="grid-medias">
+    {% for s in series %}
+    <a href="/livres/serie?serie={{ s.serie|urlencode }}" class="carte-media">
+        <div class="carte-affiche">
+            {% if s.couverture_url %}
+                <img src="{{ s.couverture_url }}" alt="{{ s.serie }}">
+            {% else %}
+                <span class="sans-affiche">📚</span>
+            {% endif %}
+        </div>
+        <div class="carte-info">
+            <div class="carte-titre">{{ s.serie }}</div>
+            <div class="carte-meta">{{ s.auteur }}</div>
+            <div class="carte-meta">{{ t('type_' + s.sous_type) }}</div>
+            <div class="badge-lieu">📚 {{ s.tomes_possedes }} {{ t('tomes_pluriel') }}</div>
+            {% if s.un_prete %}
+                <div class="badge-prete">{{ t('prete') }}</div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+<h2 style="font-family: var(--font-display); margin-top: 24px;">{{ t('livres_independants') }}</h2>
+<div class="grid-medias">
+    {% for l in livres %}
+    <a href="/livres/voir/{{ l.id }}" class="carte-media">
+        <div class="carte-affiche">
+            {% if l.couverture_url %}
+                <img src="{{ l.couverture_url }}" alt="{{ l.titre }}">
+            {% else %}
+                <span class="sans-affiche">📚</span>
+            {% endif %}
+        </div>
+        <div class="carte-info">
+            <div class="carte-titre">{{ l.titre }}</div>
+            <div class="carte-meta">{{ l.auteur }}{% if l.annee %} · {{ l.annee }}{% endif %}</div>
+            <div class="carte-meta">{{ t('type_' + l.sous_type) }}</div>
+            <div class="badge-lieu">📍 {{ l.lieu_stockage }}</div>
+            {% if l.est_prete %}
+                <div class="badge-prete">{{ t('prete') }}{% if l.prete_a %} {{ t('a_prefixe') }} {{ l.prete_a }}{% endif %}</div>
+            {% else %}
+                <div class="badge-dispo">{{ t('disponible') }}</div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

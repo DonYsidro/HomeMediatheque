@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="{{ lang_actuelle }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Médiathèque{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% set sections = [
+        {'cle': 'films', 'url': '/films', 'ajouter': '/ajouter', 'recherche': '/recherche', 'prefixes': ['/films', '/ajouter', '/recherche', '/modifier/', '/supprimer/']},
+        {'cle': 'cds', 'url': '/cds', 'ajouter': '/cds/ajouter', 'prefixes': ['/cds']},
+        {'cle': 'livres', 'url': '/livres', 'ajouter': '/livres/ajouter', 'prefixes': ['/livres']},
+        {'cle': 'bd_mangas', 'url': '/bd-mangas', 'ajouter': '/bd-mangas/ajouter', 'prefixes': ['/bd-mangas']}
+    ] %}
+    {% set ns = namespace(active=None) %}
+    {% for s in sections %}
+        {% for p in s.prefixes %}
+            {% if request.path.startswith(p) %}
+                {% set ns.active = s %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+    <header class="site-header">
+        <div class="sprocket-strip"></div>
+        <div class="header-inner">
+            <a href="/" class="logo">🎬 La Médiathèque</a>
+            <a href="/sauvegarde" class="lien-discret" style="margin-left: -12px;">💾 {{ t('sauvegarde') }}</a>
+            <span style="margin-left: 8px;">
+                <a href="/langue/fr" style="opacity: {{ '1' if lang_actuelle == 'fr' else '0.4' }};">🇫🇷</a>
+                <a href="/langue/en" style="opacity: {{ '1' if lang_actuelle == 'en' else '0.4' }};">🇬🇧</a>
+            </span>
+            {% if ns.active %}
+            <nav>
+                {% for s in sections %}
+                    {% if s != ns.active %}<a href="{{ s.url }}">{{ t(s.cle) }}</a>{% endif %}
+                {% endfor %}
+                {% if ns.active.recherche %}<a href="{{ ns.active.recherche }}">{{ t('rechercher') }}</a>{% endif %}
+                <a href="{{ ns.active.ajouter }}" class="nav-cta">{{ t('ajouter') }}</a>
+            </nav>
+            {% endif %}
+        </div>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+    function autoResizeTextareas() {
+        document.querySelectorAll("textarea").forEach(el => {
+            el.style.height = "auto";
+            el.style.height = el.scrollHeight + "px";
+            el.addEventListener("input", () => {
+                el.style.height = "auto";
+                el.style.height = el.scrollHeight + "px";
+            });
+        });
+    }
+    document.addEventListener("DOMContentLoaded", autoResizeTextareas);
+    </script>
+</body>
+</html>

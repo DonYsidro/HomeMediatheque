@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ artiste }} - Médiathèque{% endblock %}
+{% block content %}
+<p><a href="/cds" class="lien-discret">{{ t('retour') }}</a></p>
+<h1>{{ artiste }}</h1>
+<p class="subtitle">{{ albums|length }} {{ t('albums_pluriel') }}</p>
+
+<div class="grid-medias">
+    {% for c in albums %}
+    <a href="/cds/voir/{{ c.id }}" class="carte-media">
+        <div class="carte-affiche">
+            {% if c.pochette_url %}
+                <img src="{{ c.pochette_url }}" alt="{{ c.titre }}">
+            {% else %}
+                <span class="sans-affiche">💿</span>
+            {% endif %}
+        </div>
+        <div class="carte-info">
+            <div class="carte-titre">{{ c.titre }}</div>
+            <div class="carte-meta">{% if c.annee %}{{ c.annee }}{% endif %}</div>
+            <div class="badge-lieu">📍 {{ c.lieu_stockage }}</div>
+            {% if c.est_prete %}
+                <div class="badge-prete">{{ t('prete') }}{% if c.prete_a %} {{ t('a_prefixe') }} {{ c.prete_a }}{% endif %}</div>
+            {% else %}
+                <div class="badge-dispo">{{ t('disponible') }}</div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ t('titre_sauvegarde') }} - Médiathèque{% endblock %}
+{% block content %}
+<h1>{{ t('titre_sauvegarde') }}</h1>
+
+<h2 style="font-family: var(--font-display); margin-top:24px;">{{ t('exporter') }}</h2>
+<p class="subtitle">{{ t('exporter_desc') }}</p>
+<p>
+    <a href="/sauvegarde/export.json" class="btn">{{ t('sauvegarde_complete') }}</a>
+    &nbsp;
+    <a href="/sauvegarde/export.csv" class="btn">{{ t('export_csv') }}</a>
+</p>
+<p class="subtitle">{{ t('sauvegarde_explication') }}</p>
+
+<h2 style="font-family: var(--font-display); margin-top:32px;">{{ t('restaurer') }}</h2>
+<p class="subtitle" style="color: #e88a9a;">{{ t('restaurer_attention') }}</p>
+<form method="POST" action="/sauvegarde/importer" enctype="multipart/form-data" onsubmit="return confirm('{{ t('confirmer_restauration') }}');">
+    <label>{{ t('fichier_sauvegarde') }} <input type="file" name="fichier_sauvegarde" accept=".zip" required></label>
+    <button type="submit" class="btn-danger">{{ t('restaurer_bouton') }}</button>
+</form>
+
+<h2 style="font-family: var(--font-display); margin-top:32px;">{{ t('maj_masse') }}</h2>
+<p class="subtitle">{{ t('maj_masse_desc') }}</p>
+<form method="POST" action="/sauvegarde/importer_csv" enctype="multipart/form-data">
+    <label>{{ t('table_concernee') }}
+        <select name="table" required>
+            <option value="medias">{{ t('titre_films') }}</option>
+            <option value="cds">{{ t('titre_cds') }}</option>
+            <option value="livres">{{ t('titre_livres') }}</option>
+            <option value="bd_mangas">{{ t('titre_bd') }}</option>
+        </select>
+    </label>
+    <label>{{ t('fichier_csv_modifie') }} <input type="file" name="fichier_csv" accept=".csv" required></label>
+    <button type="submit">{{ t('appliquer_modifs') }}</button>
+</form>
+{% if request.args.get('maj') %}
+<p class="badge-dispo">✓ {{ request.args.get('maj') }} {{ t('lignes_maj') }}</p>
+{% endif %}
+{% endblock %}

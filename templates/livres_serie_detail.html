@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ serie }} - Médiathèque{% endblock %}
+{% block content %}
+<p><a href="/livres" class="lien-discret">{{ t('retour_livres') }}</a></p>
+<h1>{{ serie }}</h1>
+<p class="subtitle">{{ tomes|length }} {{ t('tomes_possedes') }}</p>
+
+<div class="grid-medias">
+    {% for t_item in tomes %}
+    <a href="/livres/voir/{{ t_item.id }}" class="carte-media">
+        <div class="carte-affiche">
+            {% if t_item.couverture_url %}
+                <img src="{{ t_item.couverture_url }}" alt="Tome {{ t_item.numero_tome }}">
+            {% else %}
+                <span class="sans-affiche">📚</span>
+            {% endif %}
+        </div>
+        <div class="carte-info">
+            <div class="carte-titre">
+                {% if t_item.numero_tome %}{{ t('numero_tome') }} {{ t_item.numero_tome }}{% endif %}
+                {% if t_item.titre %}{% if t_item.numero_tome %} - {% endif %}{{ t_item.titre }}{% endif %}
+            </div>
+            <div class="badge-lieu">📍 {{ t_item.lieu_stockage }}</div>
+            {% if t_item.est_prete %}
+                <div class="badge-prete">{{ t('prete') }}{% if t_item.prete_a %} {{ t('a_prefixe') }} {{ t_item.prete_a }}{% endif %}</div>
+            {% else %}
+                <div class="badge-dispo">{{ t('disponible') }}</div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}
