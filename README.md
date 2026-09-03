@@ -50,7 +50,7 @@ mkdir -p certs
 openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout certs/key.pem -out certs/cert.pem -subj "/CN=mediatheque" -addext "subjectAltName=IP:TON_IP_LOCALE"
 chmod 600 certs/key.pem
 ```
-Remplace `TON_IP_LOCALE` par l'adresse IP locale de la machine qui hébergera l'application (ex: `192.168.1.71`).
+Remplace `TON_IP_LOCALE` par l'adresse IP locale de la machine qui hébergera l'application (ex: `192.168.x.x`).
 
 **4. Créer le dossier des photos uploadées**
 ```bash
@@ -130,7 +130,7 @@ mkdir -p certs
 openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout certs/key.pem -out certs/cert.pem -subj "/CN=mediatheque" -addext "subjectAltName=IP:YOUR_LOCAL_IP"
 chmod 600 certs/key.pem
 ```
-Replace `YOUR_LOCAL_IP` with the local IP address of the machine hosting the app (e.g. `192.168.1.71`).
+Replace `YOUR_LOCAL_IP` with the local IP address of the machine hosting the app (e.g. `192.168.x.x`).
 
 **4. Create the uploads folder**
 ```bash
