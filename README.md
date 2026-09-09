@@ -1,4 +1,4 @@
-# 🎬 HomeMediatheque
+#🎬 HomeMediatheque
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
@@ -15,7 +15,7 @@ Application web familiale (Flask + SQLite, dockerisée) pour cataloguer une coll
 - 4 catégories : Films & Séries, CD Audio, Livres, BD & Manga
 - Recherche multi-critères (âge, genre, type, durée, lieu de stockage...)
 - Remplissage automatique des fiches via TMDB (films/séries), MusicBrainz (CD), Google Books (livres/BD/manga)
-- Scan de code-barres (ISBN) via la caméra pour les livres/BD/manga
+- Scan de code-barres (ISBN) via la caméra pour les livres/BD/manga, code-barre produit pour les CD
 - Regroupement par coffret (films), série (livres/BD), artiste (CD)
 - Suivi des prêts (à qui, depuis quand)
 - Photos personnalisées (prise directe ou import) en plus des couvertures/affiches trouvées en ligne
@@ -28,6 +28,7 @@ Application web familiale (Flask + SQLite, dockerisée) pour cataloguer une coll
 - Docker et Docker Compose installés
 - Une clé API [TMDB](https://www.themoviedb.org/settings/api) (gratuite)
 - Une clé API [Google Books](https://console.cloud.google.com/) (gratuite — activer "Books API" dans un projet Google Cloud, puis créer une clé dans Identifiants)
+- Un token d'accès personnel [Discogs](https://www.discogs.com/settings/developers) (gratuit — "Generate new token")
 
 ### Installation
 
@@ -42,7 +43,7 @@ cd HomeMediatheque
 cp .env.example .env
 nano .env
 ```
-Renseigne `TMDB_API_KEY` et `GOOGLEBOOKS_API_KEY` avec tes vraies clés.
+Renseigne `TMDB_API_KEY`, `GOOGLEBOOKS_API_KEY` et `DISCOGS_TOKEN` avec tes vraies clés.
 
 **3. Générer un certificat HTTPS auto-signé**
 ```bash
@@ -84,8 +85,7 @@ Les données (`mediatheque.db`, `static/uploads/`, `certs/`) sont montées en vo
 
 ### Stack technique
 
-Python / Flask / SQLite / Gunicorn / Docker · APIs externes : TMDB, MusicBrainz, Cover Art Archive, Google Books
-
+Python / Flask / SQLite / Gunicorn / Docker · External APIs: TMDB, Discogs, Google Books
 ---
 
 ## 🇬🇧 English
@@ -95,7 +95,7 @@ Python / Flask / SQLite / Gunicorn / Docker · APIs externes : TMDB, MusicBrainz
 - 4 categories: Movies & TV Shows, Music CDs, Books, Comics & Manga
 - Multi-criteria search (age rating, genre, type, duration, storage location...)
 - Auto-fill via TMDB (movies/TV), MusicBrainz (CDs), Google Books (books/comics/manga)
-- Barcode (ISBN) scanning via camera for books/comics/manga
+- Barcode (ISBN) scanning via camera for books/comics/manga, product barcode for CDs
 - Grouping by box set (movies), series (books/comics), artist (CDs)
 - Loan tracking (who, since when)
 - Custom photos (camera capture or upload) alongside online covers/posters
@@ -108,6 +108,7 @@ Python / Flask / SQLite / Gunicorn / Docker · APIs externes : TMDB, MusicBrainz
 - Docker and Docker Compose installed
 - A [TMDB](https://www.themoviedb.org/settings/api) API key (free)
 - A [Google Books](https://console.cloud.google.com/) API key (free — enable "Books API" in a Google Cloud project, then create a key under Credentials)
+- A [Discogs](https://www.discogs.com/settings/developers) personal access token (free — "Generate new token")
 
 ### Installation
 
@@ -122,7 +123,7 @@ cd HomeMediatheque
 cp .env.example .env
 nano .env
 ```
-Fill in `TMDB_API_KEY` and `GOOGLEBOOKS_API_KEY` with your real keys.
+Fill in `TMDB_API_KEY`, `GOOGLEBOOKS_API_KEY` and `DISCOGS_TOKEN` with your real keys.
 
 **3. Generate a self-signed HTTPS certificate**
 ```bash
@@ -164,8 +165,7 @@ Data (`mediatheque.db`, `static/uploads/`, `certs/`) is mounted as volumes and i
 
 ### Tech stack
 
-Python / Flask / SQLite / Gunicorn / Docker · External APIs: TMDB, MusicBrainz, Cover Art Archive, Google Books
-
+Python / Flask / SQLite / Gunicorn / Docker · External APIs: TMDB, Discogs, Google Books
 ---
 
 ## Licence / License
