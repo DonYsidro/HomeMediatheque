@@ -4,44 +4,57 @@
 <h1>{{ t('ajouter_cd') }}</h1>
 <form method="POST" action="/cds/ajouter" enctype="multipart/form-data">
     <label>{{ t('titre_album') }} * <input type="text" name="titre" id="champ-titre" required></label>
-    <button type="button" onclick="chercherMusicBrainz()">{{ t('chercher_infos') }}</button>
+    <label>{{ t('artiste') }} <input type="text" name="artiste"></label>
+    <button type="button" onclick="chercherDiscogs()">{{ t('chercher_infos') }}</button>
+    <button type="button" onclick="demarrerScanner()">{{ t('scanner_code_barre') }}</button>
     <span id="statut-recherche"></span>
 
-    <label>{{ t('artiste') }} <input type="text" name="artiste"></label>
+    <div id="zone-scanner" style="display:none; max-width: 400px; margin: 12px 0;"></div>
+
     <label>{{ t('annee') }} <input type="number" name="annee"></label>
     <label>{{ t('nb_pistes') }} <input type="number" name="nb_pistes"></label>
     <label>{{ t('duree_minutes') }} <input type="number" name="duree_minutes"></label>
     <label>{{ t('genre') }} <input type="text" name="genre"></label>
+    <label>{{ t('liste_pistes') }} <textarea name="pistes" id="champ-pistes"></textarea></label>
 
     <label>{{ t('url_pochette') }} <input type="text" name="pochette_url" id="champ-pochette"></label>
     <button type="button" onclick="chercherPochettes()">{{ t('choisir_pochette') }}</button>
     <div id="galerie-pochettes" style="display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0;"></div>
 
-    <label>{{ t('code_barre') }} <input type="text" name="code_barre"></label>
+    <label>{{ t('code_barre') }} <input type="text" name="code_barre" id="champ-code-barre"></label>
     <label>{{ t('photo_upload') }} <input type="file" name="photo" accept="image/*" capture="environment"></label>
     <label>{{ t('lieu_stockage') }} * <input type="text" name="lieu_stockage" required></label>
 
     <button type="submit">{{ t('ajouter_bouton') }}</button>
 </form>
 
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-async function chercherMusicBrainz() {
+async function chercherDiscogs(codeBarre) {
     const titre = document.getElementById("champ-titre").value.trim();
     const artiste = document.querySelector('[name="artiste"]').value.trim();
     const statut = document.getElementById("statut-recherche");
-    if (!titre) { statut.textContent = "Saisis d'abord un titre."; return; }
+    if (!titre && !codeBarre) { statut.textContent = "Saisis un titre ou scanne un code-barre."; return; }
     statut.textContent = "Recherche en cours...";
     try {
-        const params = artiste ? `titre=${encodeURIComponent(titre)}&artiste=${encodeURIComponent(artiste)}` : `titre=${encodeURIComponent(titre)}`;
-        const resp = await fetch(`/api/musicbrainz_search?${params}`);
+        let params;
+        if (codeBarre) {
+            params = `code_barre=${encodeURIComponent(codeBarre)}`;
+        } else {
+            params = `titre=${encodeURIComponent(titre)}`;
+            if (artiste) params += `&artiste=${encodeURIComponent(artiste)}`;
+        }
+        const resp = await fetch(`/api/discogs_search?${params}`);
         const data = await resp.json();
         if (!resp.ok) { statut.textContent = data.erreur || "Erreur de recherche."; return; }
         document.getElementById("champ-titre").value = data.titre || titre;
-        document.querySelector('[name="artiste"]').value = data.artiste || "";
+        document.querySelector('[name="artiste"]').value = data.artiste || artiste;
         document.querySelector('[name="annee"]').value = data.annee || "";
         document.querySelector('[name="nb_pistes"]').value = data.nb_pistes || "";
-        document.querySelector('[name="duree_minutes"]').value = data.duree_minutes || "";
+        document.querySelector('[name="genre"]').value = data.genre || "";
+        document.getElementById("champ-pistes").value = data.pistes || "";
         document.getElementById("champ-pochette").value = data.pochette_url || "";
+        if (data.code_barre) document.getElementById("champ-code-barre").value = data.code_barre;
         statut.textContent = "✓ Infos trouvées, vérifie et complète si besoin.";
     } catch (err) {
         statut.textContent = "Erreur de connexion à l'API.";
@@ -50,18 +63,21 @@ async function chercherMusicBrainz() {
 
 async function chercherPochettes() {
     const titre = document.getElementById("champ-titre").value.trim();
+    const artiste = document.querySelector('[name="artiste"]').value.trim();
     const galerie = document.getElementById("galerie-pochettes");
     if (!titre) { document.getElementById("statut-recherche").textContent = "Saisis d'abord un titre."; return; }
     galerie.innerHTML = "Recherche de pochettes...";
     try {
-        const resp = await fetch(`/api/musicbrainz_couvertures?titre=${encodeURIComponent(titre)}`);
+        let params = `titre=${encodeURIComponent(titre)}`;
+        if (artiste) params += `&artiste=${encodeURIComponent(artiste)}`;
+        const resp = await fetch(`/api/discogs_couvertures?${params}`);
         const data = await resp.json();
         if (!resp.ok) { galerie.innerHTML = data.erreur || "Aucune pochette trouvée."; return; }
         galerie.innerHTML = "";
         data.resultats.forEach(r => {
             const img = document.createElement("img");
             img.src = r.pochette_url;
-            img.title = r.titre + (r.artiste ? " - " + r.artiste : "");
+            img.title = r.titre;
             img.style = "height:150px; cursor:pointer; border-radius:6px; border:2px solid var(--border);";
             img.onerror = () => { img.style.display = "none"; };
             img.onclick = () => {
@@ -73,6 +89,35 @@ async function chercherPochettes() {
         });
     } catch (err) {
         galerie.innerHTML = "Erreur de connexion à l'API.";
+    }
+}
+
+let scannerActif = null;
+function demarrerScanner() {
+    const zone = document.getElementById("zone-scanner");
+    zone.style.display = "block";
+    zone.innerHTML = '<div id="lecteur-scan"></div>';
+    scannerActif = new Html5Qrcode("lecteur-scan", {
+        formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8]
+    });
+    scannerActif.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 100 } },
+        (codeDetecte) => {
+            document.getElementById("champ-code-barre").value = codeDetecte;
+            arreterScanner();
+            chercherDiscogs(codeDetecte);
+        },
+        () => {}
+    ).catch((err) => {
+        document.getElementById("statut-recherche").textContent = "Impossible d'accéder à la caméra : " + err;
+    });
+}
+function arreterScanner() {
+    if (scannerActif) {
+        scannerActif.stop().then(() => {
+            document.getElementById("zone-scanner").style.display = "none";
+        });
     }
 }
 </script>

@@ -14,6 +14,7 @@ load_dotenv()
 
 TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
 GOOGLEBOOKS_API_KEY = os.environ.get("GOOGLEBOOKS_API_KEY")
+DISCOGS_TOKEN = os.environ.get("DISCOGS_TOKEN")
 import uuid
 
 def sauvegarder_photo_upload(fichier):
@@ -380,71 +381,57 @@ def tmdb_search():
     }
     return resultat
 
-@app.route("/api/musicbrainz_search")
-def musicbrainz_search():
+@app.route("/api/discogs_search")
+def discogs_search():
     titre = request.args.get("titre", "").strip()
     artiste_filtre = request.args.get("artiste", "").strip()
-    if not titre:
-        return {"erreur": "Titre manquant"}, 400
+    code_barre = request.args.get("code_barre", "").strip()
+
+    if not titre and not code_barre:
+        return {"erreur": "Titre ou code-barre manquant"}, 400
 
     headers = {"User-Agent": "MediathequeFamiliale/1.0 (usage personnel)"}
+    params = {"type": "release", "token": DISCOGS_TOKEN}
 
-    resp = requests.get("https://musicbrainz.org/ws/2/release/", params={
-        "query": (f'release:"{titre}" AND artist:"{artiste_filtre}"' if artiste_filtre else f"release:{titre}"),
-        "fmt": "json",
-        "limit": 1
-    }, headers=headers, timeout=10)
+    if code_barre:
+        params["barcode"] = code_barre
+    else:
+        params["release_title"] = titre
+        if artiste_filtre:
+            params["artist"] = artiste_filtre
+
+    resp = requests.get("https://api.discogs.com/database/search", params=params, headers=headers, timeout=10)
     data = resp.json()
-
-    releases = data.get("releases", [])
-    if not releases:
+    resultats = data.get("results", [])
+    if not resultats:
         return {"erreur": "Aucun résultat trouvé"}, 404
 
-    release = releases[0]
-    release_id = release["id"]
-    artiste = ", ".join([c["artist"]["name"] for c in release.get("artist-credit", []) if isinstance(c, dict) and "artist" in c])
-    annee = (release.get("date") or "")[:4]
+    premier = resultats[0]
+    discogs_id = premier.get("id")
 
-    # Détails du disque : nombre de pistes et durée totale
-    import time
-    time.sleep(1.1)
-    detail_resp = requests.get(f"https://musicbrainz.org/ws/2/release/{release_id}", params={
-        "fmt": "json",
-        "inc": "recordings"
-    }, headers=headers, timeout=10)
+    detail_resp = requests.get(f"https://api.discogs.com/releases/{discogs_id}", params={"token": DISCOGS_TOKEN}, headers=headers, timeout=10)
     detail = detail_resp.json()
 
-    nb_pistes = 0
-    duree_totale_ms = 0
-    liste_pistes = []
-    for media in detail.get("media", []):
-        nb_pistes += media.get("track-count", 0)
-        for piste in media.get("tracks", []):
-            duree_totale_ms += piste.get("length") or 0
-            liste_pistes.append(piste.get("title", ""))
-    duree_minutes = round(duree_totale_ms / 60000) if duree_totale_ms else None
+    artistes_noms = ", ".join([a.get("name", "") for a in detail.get("artists", [])])
+    liste_pistes = [p.get("title", "") for p in detail.get("tracklist", []) if p.get("type_") == "track" or "title" in p]
     pistes_texte = "\n".join(liste_pistes)
-
-    # Pochette (pas toujours disponible, on tente sans faire échouer si absente)
+    genres = ", ".join(detail.get("genres", []) or detail.get("styles", []))
     pochette_url = None
-    try:
-        cover_resp = requests.get(f"https://coverartarchive.org/release/{release_id}", headers=headers, timeout=5)
-        if cover_resp.ok:
-            images = cover_resp.json().get("images", [])
-            if images:
-                pochette_url = images[0].get("image")
-    except requests.RequestException:
-        pass
+    images = detail.get("images", [])
+    if images:
+        pochette_url = images[0].get("uri")
 
     return {
-        "titre": release.get("title"),
-        "artiste": artiste,
-        "annee": annee,
-        "nb_pistes": nb_pistes,
-        "duree_minutes": duree_minutes,
+        "titre": detail.get("title"),
+        "artiste": artistes_noms,
+        "annee": detail.get("year"),
+        "nb_pistes": len(liste_pistes),
+        "pistes": pistes_texte,
+        "genre": genres,
         "pochette_url": pochette_url,
-	"pistes": pistes_texte,
+        "code_barre": code_barre or None,
     }
+
 
 @app.route("/cds")
 def cds():
@@ -904,29 +891,32 @@ def tmdb_couvertures():
     return {"resultats": resultats}
 
 
-@app.route("/api/musicbrainz_couvertures")
-def musicbrainz_couvertures():
+@app.route("/api/discogs_couvertures")
+def discogs_couvertures():
     titre = request.args.get("titre", "").strip()
     artiste_filtre = request.args.get("artiste", "").strip()
     if not titre:
         return {"erreur": "Titre manquant"}, 400
 
     headers = {"User-Agent": "MediathequeFamiliale/1.0 (usage personnel)"}
-    resp = requests.get("https://musicbrainz.org/ws/2/release/", params={
-        "query": (f'release:"{titre}" AND artist:"{artiste_filtre}"' if artiste_filtre else f"release:{titre}"),
-        "fmt": "json",
-        "limit": 10
-    }, headers=headers, timeout=10)
+    params = {"type": "release", "release_title": titre, "token": DISCOGS_TOKEN, "per_page": 10}
+    if artiste_filtre:
+        params["artist"] = artiste_filtre
+
+    resp = requests.get("https://api.discogs.com/database/search", params=params, headers=headers, timeout=10)
     data = resp.json()
 
     resultats = []
-    for release in data.get("releases", []):
-        artiste = ", ".join([c["artist"]["name"] for c in release.get("artist-credit", []) if isinstance(c, dict) and "artist" in c])
+    for r in data.get("results", []):
+        if not r.get("cover_image"):
+            continue
         resultats.append({
-            "titre": release.get("title"),
-            "artiste": artiste,
-            "pochette_url": f"https://coverartarchive.org/release/{release['id']}/front-250"
+            "titre": r.get("title"),
+            "artiste": "",
+            "pochette_url": r.get("cover_image"),
         })
+        if len(resultats) >= 10:
+            break
 
     if not resultats:
         return {"erreur": "Aucune pochette trouvée"}, 404

@@ -4,20 +4,24 @@
 <h1>{{ t('modifier') }} : {{ cd.titre }}</h1>
 <form method="POST" action="/cds/modifier/{{ cd.id }}" enctype="multipart/form-data">
     <label>{{ t('titre_album') }} * <input type="text" name="titre" id="champ-titre" value="{{ cd.titre }}" required></label>
-	<button type="button" onclick="chercherMusicBrainz()">{{ t('chercher_infos') }}</button>
-	<span id="statut-recherche"></span>
     <label>{{ t('artiste') }} <input type="text" name="artiste" value="{{ cd.artiste or '' }}"></label>
+    <button type="button" onclick="chercherDiscogs()">{{ t('chercher_infos') }}</button>
+    <button type="button" onclick="demarrerScanner()">{{ t('scanner_code_barre') }}</button>
+    <span id="statut-recherche"></span>
+
+    <div id="zone-scanner" style="display:none; max-width: 400px; margin: 12px 0;"></div>
+
     <label>{{ t('annee') }} <input type="number" name="annee" value="{{ cd.annee or '' }}"></label>
     <label>{{ t('nb_pistes') }} <input type="number" name="nb_pistes" value="{{ cd.nb_pistes or '' }}"></label>
     <label>{{ t('duree_minutes') }} <input type="number" name="duree_minutes" value="{{ cd.duree_minutes or '' }}"></label>
     <label>{{ t('genre') }} <input type="text" name="genre" value="{{ cd.genre or '' }}"></label>
-    <label>{{ t('liste_pistes') }} <textarea name="pistes">{{ cd.pistes or '' }}</textarea></label>
+    <label>{{ t('liste_pistes') }} <textarea name="pistes" id="champ-pistes">{{ cd.pistes or '' }}</textarea></label>
 
     <label>{{ t('url_pochette') }} <input type="text" name="pochette_url" id="champ-pochette" value="{{ cd.pochette_url or '' }}"></label>
     <button type="button" onclick="chercherPochettes()">{{ t('choisir_pochette') }}</button>
     <div id="galerie-pochettes" style="display:flex; flex-wrap:wrap; gap:10px; margin: 12px 0;"></div>
 
-    <label>{{ t('code_barre') }} <input type="text" name="code_barre" value="{{ cd.code_barre or '' }}"></label>
+    <label>{{ t('code_barre') }} <input type="text" name="code_barre" id="champ-code-barre" value="{{ cd.code_barre or '' }}"></label>
     <label>{{ t('photo_upload') }} <input type="file" name="photo" accept="image/*" capture="environment"></label>
     <label>{{ t('lieu_stockage') }} * <input type="text" name="lieu_stockage" value="{{ cd.lieu_stockage }}" required></label>
 
@@ -36,21 +40,54 @@
     <button type="submit" class="btn-danger">{{ t('supprimer') }}</button>
 </form>
 
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
+async function chercherDiscogs(codeBarre) {
+    const titre = document.getElementById("champ-titre").value.trim();
+    const artiste = document.querySelector('[name="artiste"]').value.trim();
+    const statut = document.getElementById("statut-recherche");
+    statut.textContent = "Recherche en cours...";
+    try {
+        let params;
+        if (codeBarre) {
+            params = `code_barre=${encodeURIComponent(codeBarre)}`;
+        } else {
+            params = `titre=${encodeURIComponent(titre)}`;
+            if (artiste) params += `&artiste=${encodeURIComponent(artiste)}`;
+        }
+        const resp = await fetch(`/api/discogs_search?${params}`);
+        const data = await resp.json();
+        if (!resp.ok) { statut.textContent = data.erreur || "Erreur de recherche."; return; }
+        document.querySelector('[name="artiste"]').value = data.artiste || artiste;
+        document.querySelector('[name="annee"]').value = data.annee || "";
+        document.querySelector('[name="nb_pistes"]').value = data.nb_pistes || "";
+        document.querySelector('[name="genre"]').value = data.genre || "";
+        document.getElementById("champ-pistes").value = data.pistes || "";
+        document.getElementById("champ-pochette").value = data.pochette_url || "";
+        if (data.code_barre) document.getElementById("champ-code-barre").value = data.code_barre;
+        statut.textContent = "✓ Infos mises à jour, vérifie avant d'enregistrer.";
+    } catch (err) {
+        statut.textContent = "Erreur de connexion à l'API.";
+    }
+}
+
 async function chercherPochettes() {
-    const titre = document.querySelector('[name="titre"]').value.trim();
+    const titre = document.getElementById("champ-titre").value.trim();
+    const artiste = document.querySelector('[name="artiste"]').value.trim();
     const galerie = document.getElementById("galerie-pochettes");
     if (!titre) { alert("Saisis d'abord un titre."); return; }
     galerie.innerHTML = "Recherche de pochettes...";
     try {
-        const resp = await fetch(`/api/musicbrainz_couvertures?titre=${encodeURIComponent(titre)}`);
+        let params = `titre=${encodeURIComponent(titre)}`;
+        if (artiste) params += `&artiste=${encodeURIComponent(artiste)}`;
+        const resp = await fetch(`/api/discogs_couvertures?${params}`);
         const data = await resp.json();
         if (!resp.ok) { galerie.innerHTML = data.erreur || "Aucune pochette trouvée."; return; }
         galerie.innerHTML = "";
         data.resultats.forEach(r => {
             const img = document.createElement("img");
             img.src = r.pochette_url;
-            img.title = r.titre + (r.artiste ? " - " + r.artiste : "");
+            img.title = r.titre;
             img.style = "height:150px; cursor:pointer; border-radius:6px; border:2px solid var(--border);";
             img.onerror = () => { img.style.display = "none"; };
             img.onclick = () => {
@@ -64,25 +101,33 @@ async function chercherPochettes() {
         galerie.innerHTML = "Erreur de connexion à l'API.";
     }
 }
-async function chercherMusicBrainz() {
-    const titre = document.getElementById("champ-titre").value.trim();
-    const artiste = document.querySelector('[name="artiste"]').value.trim();
-    const statut = document.getElementById("statut-recherche");
-    statut.textContent = "Recherche en cours...";
-    try {
-        const params = artiste ? `titre=${encodeURIComponent(titre)}&artiste=${encodeURIComponent(artiste)}` : `titre=${encodeURIComponent(titre)}`;
-        const resp = await fetch(`/api/musicbrainz_search?${params}`);
-        const data = await resp.json();
-        if (!resp.ok) { statut.textContent = data.erreur || "Erreur de recherche."; return; }
-        document.querySelector('[name="artiste"]').value = data.artiste || "";
-        document.querySelector('[name="annee"]').value = data.annee || "";
-        document.querySelector('[name="nb_pistes"]').value = data.nb_pistes || "";
-        document.querySelector('[name="duree_minutes"]').value = data.duree_minutes || "";
-        document.getElementById("champ-pochette").value = data.pochette_url || "";
-        document.querySelector('[name="pistes"]').value = data.pistes || "";
-        statut.textContent = "✓ Infos mises à jour, vérifie avant d'enregistrer.";
-    } catch (err) {
-        statut.textContent = "Erreur de connexion à l'API.";
+
+let scannerActif = null;
+function demarrerScanner() {
+    const zone = document.getElementById("zone-scanner");
+    zone.style.display = "block";
+    zone.innerHTML = '<div id="lecteur-scan"></div>';
+    scannerActif = new Html5Qrcode("lecteur-scan", {
+        formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8]
+    });
+    scannerActif.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 100 } },
+        (codeDetecte) => {
+            document.getElementById("champ-code-barre").value = codeDetecte;
+            arreterScanner();
+            chercherDiscogs(codeDetecte);
+        },
+        () => {}
+    ).catch((err) => {
+        document.getElementById("statut-recherche").textContent = "Impossible d'accéder à la caméra : " + err;
+    });
+}
+function arreterScanner() {
+    if (scannerActif) {
+        scannerActif.stop().then(() => {
+            document.getElementById("zone-scanner").style.display = "none";
+        });
     }
 }
 </script>
