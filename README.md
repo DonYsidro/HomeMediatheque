@@ -14,7 +14,7 @@ Application web familiale (Flask + SQLite, dockerisée) pour cataloguer une coll
 
 - 4 catégories : Films & Séries, CD Audio, Livres, BD & Manga
 - Recherche multi-critères (âge, genre, type, durée, lieu de stockage...)
-- Remplissage automatique des fiches via TMDB (films/séries), MusicBrainz (CD), Google Books (livres/BD/manga)
+- Remplissage automatique des fiches via TMDB (films/séries), Discogs (CD), Google Books (livres/BD/manga)
 - Scan de code-barres (ISBN) via la caméra pour les livres/BD/manga, code-barre produit pour les CD
 - Regroupement par coffret (films), série (livres/BD), artiste (CD)
 - Suivi des prêts (à qui, depuis quand)
@@ -94,7 +94,7 @@ Python / Flask / SQLite / Gunicorn / Docker · External APIs: TMDB, Discogs, Goo
 
 - 4 categories: Movies & TV Shows, Music CDs, Books, Comics & Manga
 - Multi-criteria search (age rating, genre, type, duration, storage location...)
-- Auto-fill via TMDB (movies/TV), MusicBrainz (CDs), Google Books (books/comics/manga)
+- Auto-fill via TMDB (movies/TV), Discogs (CDs), Google Books (books/comics/manga)
 - Barcode (ISBN) scanning via camera for books/comics/manga, product barcode for CDs
 - Grouping by box set (movies), series (books/comics), artist (CDs)
 - Loan tracking (who, since when)
