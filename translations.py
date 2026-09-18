@@ -13,6 +13,7 @@ TRANSLATIONS = {
         # Champs communs
         'titre_champ': 'Titre', 'annee': 'Année', 'auteur': 'Auteur', 'artiste': 'Artiste',
         'editeur': 'Éditeur', 'genre': 'Genre', 'type_champ': 'Type', 'duree_minutes': 'Durée (minutes)',
+        'type_film': 'Film', 'type_serie': 'Série', 'type_coffret': 'Coffret', 'type_roman': 'Roman', 'type_collection': 'Collection', 'type_cuisine': 'Cuisine', 'type_educatif': 'Éducatif', 'type_bd': 'BD', 'type_manga': 'Manga',
         'synopsis': 'Synopsis', 'lieu_stockage': 'Lieu de stockage', 'code_barre': 'Code-barre',
         'isbn': 'ISBN', 'langue_champ': 'Langue', 'nb_pages': 'Nombre de pages',
         'nb_episodes': 'Nombre d\'épisodes', 'nb_saisons': 'Nombre de saisons',
@@ -88,6 +89,7 @@ TRANSLATIONS = {
 
         'titre_champ': 'Title', 'annee': 'Year', 'auteur': 'Author', 'artiste': 'Artist',
         'editeur': 'Publisher', 'genre': 'Genre', 'type_champ': 'Type', 'duree_minutes': 'Duration (minutes)',
+        'type_film': 'Movie', 'type_serie': 'TV Show', 'type_coffret': 'Box set', 'type_roman': 'Novel', 'type_collection': 'Collection', 'type_cuisine': 'Cookbook', 'type_educatif': 'Educational', 'type_bd': 'Comic', 'type_manga': 'Manga',
         'synopsis': 'Synopsis', 'lieu_stockage': 'Storage location', 'code_barre': 'Barcode',
         'isbn': 'ISBN', 'langue_champ': 'Language', 'nb_pages': 'Number of pages',
         'nb_episodes': 'Number of episodes', 'nb_saisons': 'Number of seasons',
