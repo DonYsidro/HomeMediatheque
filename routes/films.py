@@ -16,9 +16,40 @@ def ajouter_personne(conn, media_id, nom, role):
 @films_bp.route("/films")
 def films():
     conn = get_db()
-    medias = conn.execute("SELECT * FROM medias ORDER BY titre").fetchall()
+    tous = conn.execute("SELECT * FROM medias ORDER BY serie, titre").fetchall()
     conn.close()
-    return render_template("films.html", medias=medias)
+
+    series = {}
+    individuels = []
+    for m in tous:
+        if m["serie"]:
+            cle = m["serie"]
+            if cle not in series:
+                series[cle] = {
+                    "serie": cle,
+                    "affiche_url": m["affiche_url"],
+                    "tomes_possedes": 0,
+                    "un_prete": False,
+                }
+            series[cle]["tomes_possedes"] += 1
+            if m["est_prete"]:
+                series[cle]["un_prete"] = True
+            if not series[cle]["affiche_url"] and m["affiche_url"]:
+                series[cle]["affiche_url"] = m["affiche_url"]
+        else:
+            individuels.append(m)
+
+    liste_series = sorted(series.values(), key=lambda s: s["serie"])
+    return render_template("films.html", series=liste_series, medias=individuels)
+
+
+@films_bp.route("/films/serie")
+def films_serie_detail():
+    serie = request.args.get("serie", "")
+    conn = get_db()
+    membres = conn.execute("SELECT * FROM medias WHERE serie = ? ORDER BY annee, titre", (serie,)).fetchall()
+    conn.close()
+    return render_template("films_serie_detail.html", membres=membres, serie=serie)
 
 
 @films_bp.route("/ajouter", methods=["GET", "POST"])
@@ -27,12 +58,13 @@ def ajouter():
 
     if request.method == "POST":
         cur = conn.execute("""
-            INSERT INTO medias (titre, type, annee, age_classification, duree_minutes,
+            INSERT INTO medias (titre, serie, type, annee, age_classification, duree_minutes,
                                  nb_episodes, nb_saisons, synopsis, affiche_url, code_barre,
-                                 lieu_stockage, support, coffret_id)
+                                 lieu_stockage, support)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             request.form["titre"],
+            request.form.get("serie") or None,
             request.form["type"],
             request.form.get("annee") or None,
             request.form.get("age_classification") or None,
@@ -44,7 +76,6 @@ def ajouter():
             request.form.get("code_barre") or None,
             request.form["lieu_stockage"],
             request.form.get("support") or None,
-            request.form.get("coffret_id") or None,
         ))
         media_id = cur.lastrowid
 
@@ -71,9 +102,8 @@ def ajouter():
         conn.close()
         return redirect(url_for("index"))
 
-    coffrets = conn.execute("SELECT id, titre FROM medias WHERE type = 'coffret'").fetchall()
     conn.close()
-    return render_template("ajouter.html", coffrets=coffrets)
+    return render_template("ajouter.html")
 
 
 @films_bp.route("/recherche")
@@ -81,7 +111,6 @@ def recherche():
     conn = get_db()
 
     titre = request.args.get("titre", "").strip()
-    artiste_filtre = request.args.get("artiste", "").strip()
     type_media = request.args.get("type", "")
     genre = request.args.get("genre", "")
     age_classification = request.args.get("age_classification", "")
@@ -151,13 +180,14 @@ def modifier(media_id):
     if request.method == "POST":
         conn.execute("""
             UPDATE medias SET
-                titre = ?, type = ?, annee = ?, age_classification = ?, duree_minutes = ?,
+                titre = ?, serie = ?, type = ?, annee = ?, age_classification = ?, duree_minutes = ?,
                 nb_episodes = ?, nb_saisons = ?, synopsis = ?, affiche_url = ?, code_barre = ?,
-                lieu_stockage = ?, support = ?, coffret_id = ?,
+                lieu_stockage = ?, support = ?,
                 est_prete = ?, prete_a = ?, date_pret = ?
             WHERE id = ?
         """, (
             request.form["titre"],
+            request.form.get("serie") or None,
             request.form["type"],
             request.form.get("annee") or None,
             request.form.get("age_classification") or None,
@@ -169,7 +199,6 @@ def modifier(media_id):
             request.form.get("code_barre") or None,
             request.form["lieu_stockage"],
             request.form.get("support") or None,
-            request.form.get("coffret_id") or None,
             1 if request.form.get("est_prete") else 0,
             request.form.get("prete_a") or None,
             request.form.get("date_pret") or None,
@@ -226,12 +255,8 @@ def modifier(media_id):
     """, (media_id,)).fetchall()
     compositeurs_str = ", ".join([p["nom"] for p in compositeurs_actuels])
 
-    coffrets = conn.execute(
-        "SELECT id, titre FROM medias WHERE type = 'coffret' AND id != ?", (media_id,)
-    ).fetchall()
-
     conn.close()
-    return render_template("modifier.html", media=media, coffrets=coffrets,
+    return render_template("modifier.html", media=media,
                             genres_str=genres_str, realisateurs_str=realisateurs_str,
                             acteurs_str=acteurs_str, compositeurs_str=compositeurs_str)
 

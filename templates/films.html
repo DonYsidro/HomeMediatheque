@@ -2,7 +2,33 @@
 {% block title %}{{ t('titre_films') }} - Médiathèque{% endblock %}
 {% block content %}
 <h1>{{ t('titre_films') }}</h1>
-<p class="subtitle">{{ medias|length }} {{ t('media_catalogue') }}</p>
+<p class="subtitle">{{ series|length }} {{ t('series_titre') }} · {{ medias|length }} {{ t('medias_independants') }}</p>
+
+{% if series %}
+<h2 style="font-family: var(--font-display); margin-top: 24px;">{{ t('series_titre') }}</h2>
+<div class="grid-medias">
+    {% for s in series %}
+    <a href="/films/serie?serie={{ s.serie|urlencode }}" class="carte-media">
+        <div class="carte-affiche">
+            {% if s.affiche_url %}
+                <img src="{{ s.affiche_url }}" alt="{{ s.serie }}">
+            {% else %}
+                <span class="sans-affiche">🎬</span>
+            {% endif %}
+        </div>
+        <div class="carte-info">
+            <div class="carte-titre">{{ s.serie }}</div>
+            <div class="badge-lieu">🎬 {{ s.tomes_possedes }} {{ t('medias_pluriel') }}</div>
+            {% if s.un_prete %}
+                <div class="badge-prete">{{ t('prete') }}</div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+<h2 style="font-family: var(--font-display); margin-top: 24px;">{{ t('medias_independants') }}</h2>
 <div class="grid-medias">
     {% for m in medias %}
     <a href="/voir/{{ m.id }}" class="carte-media">

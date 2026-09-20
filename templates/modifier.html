@@ -29,14 +29,7 @@
     <label>{{ t('lieu_stockage') }} * <input type="text" name="lieu_stockage" value="{{ media.lieu_stockage }}" required></label>
     <label>{{ t('support') }} <input type="text" name="support" value="{{ media.support or '' }}"></label>
 
-    <label>{{ t('fait_partie_coffret') }}
-        <select name="coffret_id">
-            <option value="">{{ t('aucun') }}</option>
-            {% for c in coffrets %}
-            <option value="{{ c.id }}" {% if media.coffret_id == c.id %}selected{% endif %}>{{ c.titre }}</option>
-            {% endfor %}
-        </select>
-    </label>
+    <label>{{ t('serie_champ') }} <input type="text" name="serie" value="{{ media.serie or '' }}"></label>
 
     <label>{{ t('genres_virgules') }} <input type="text" name="genres" value="{{ genres_str }}"></label>
     <label>{{ t('realisateurs') }} <input type="text" name="realisateurs" value="{{ realisateurs_str }}"></label>

@@ -53,7 +53,7 @@ TRANSLATIONS = {
         'titre_livres': 'Livres', 'ajouter_livre': '+ Ajouter un livre',
         'filtrer_par_type': 'Filtrer par type', 'roman': 'Roman', 'collection_type': 'Collection',
         'cuisine': 'Cuisine', 'educatif': 'Éducatif', 'series_titre': 'Séries',
-        'livres_independants': 'Livres indépendants', 'serie_optionnelle': 'Série (optionnel, laisser vide si livre indépendant)',
+        'livres_independants': 'Livres indépendants', 'medias_independants': 'Médias indépendants', 'serie_optionnelle': 'Série (optionnel, laisser vide si livre indépendant)',
         'numero_tome_optionnel': 'Numéro de tome (optionnel)',
 
         # BD/Manga
@@ -122,7 +122,7 @@ TRANSLATIONS = {
         'titre_livres': 'Books', 'ajouter_livre': '+ Add a book',
         'filtrer_par_type': 'Filter by type', 'roman': 'Novel', 'collection_type': 'Collection',
         'cuisine': 'Cookbook', 'educatif': 'Educational', 'series_titre': 'Series',
-        'livres_independants': 'Standalone books', 'serie_optionnelle': 'Series (optional, leave blank for a standalone book)',
+        'livres_independants': 'Standalone books', 'medias_independants': 'Standalone items', 'serie_optionnelle': 'Series (optional, leave blank for a standalone book)',
         'numero_tome_optionnel': 'Volume number (optional)',
 
         'titre_bd': 'Comics & Manga', 'ajouter_bd': '+ Add a volume',

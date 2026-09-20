@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS medias (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     titre TEXT NOT NULL,
+    serie TEXT,
     type TEXT NOT NULL,
     annee INTEGER,
     age_classification TEXT,
@@ -48,6 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_personnes_nom ON personnes(nom);
 CREATE TABLE IF NOT EXISTS cds (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     titre TEXT NOT NULL,
+    serie TEXT,
     artiste TEXT,
     annee INTEGER,
     nb_pistes INTEGER,
@@ -66,6 +68,7 @@ CREATE TABLE IF NOT EXISTS cds (
 CREATE TABLE IF NOT EXISTS livres (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     titre TEXT NOT NULL,
+    serie TEXT,
     serie TEXT,
     numlero_tome INTEGER,
     auteur TEXT,
@@ -87,6 +90,7 @@ CREATE TABLE IF NOT EXISTS livres (
 CREATE TABLE IF NOT EXISTS bd_mangas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     titre TEXT NOT NULL,
+    serie TEXT,
     serie TEXT,
     auteur TEXT,
     type TEXT,
