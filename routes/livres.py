@@ -1,20 +1,33 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, abort
 from database import get_db
 from utils import valeur_image
 
 livres_bp = Blueprint("livres", __name__, url_prefix="/livres")
 
+SOUS_TYPES_VALIDES = ["roman", "collection", "cuisine", "educatif"]
+
 
 @livres_bp.route("")
 def livres():
     conn = get_db()
-    sous_type = request.args.get("sous_type", "")
-    if sous_type:
-        tous_livres = conn.execute(
-            "SELECT * FROM livres WHERE sous_type = ? ORDER BY serie, auteur, titre, numero_tome", (sous_type,)
-        ).fetchall()
-    else:
-        tous_livres = conn.execute("SELECT * FROM livres ORDER BY serie, auteur, titre, numero_tome").fetchall()
+    compteurs = {}
+    for st in SOUS_TYPES_VALIDES:
+        compteurs[st] = conn.execute(
+            "SELECT COUNT(*) FROM livres WHERE sous_type = ?", (st,)
+        ).fetchone()[0]
+    conn.close()
+    return render_template("livres.html", compteurs=compteurs)
+
+
+@livres_bp.route("/<sous_type>")
+def livres_categorie(sous_type):
+    if sous_type not in SOUS_TYPES_VALIDES:
+        abort(404)
+
+    conn = get_db()
+    tous_livres = conn.execute(
+        "SELECT * FROM livres WHERE sous_type = ? ORDER BY serie, auteur, titre, numero_tome", (sous_type,)
+    ).fetchall()
     conn.close()
 
     series = {}
@@ -40,7 +53,7 @@ def livres():
             individuels.append(l)
 
     liste_series = sorted(series.values(), key=lambda s: s["serie"])
-    return render_template("livres.html", series=liste_series, livres=individuels, sous_type_actif=sous_type)
+    return render_template("livres_categorie.html", series=liste_series, livres=individuels, sous_type=sous_type)
 
 
 @livres_bp.route("/serie")
@@ -51,7 +64,8 @@ def livres_serie_detail():
         "SELECT * FROM livres WHERE serie = ? ORDER BY numero_tome", (serie,)
     ).fetchall()
     conn.close()
-    return render_template("livres_serie_detail.html", tomes=tomes, serie=serie)
+    sous_type = tomes[0]["sous_type"] if tomes else None
+    return render_template("livres_serie_detail.html", tomes=tomes, serie=serie, sous_type=sous_type)
 
 
 @livres_bp.route("/ajouter", methods=["GET", "POST"])
@@ -78,8 +92,9 @@ def ajouter_livre():
             request.form["lieu_stockage"],
         ))
         conn.commit()
+        sous_type = request.form["sous_type"]
         conn.close()
-        return redirect(url_for(".livres"))
+        return redirect(url_for(".livres_categorie", sous_type=sous_type))
     conn.close()
     return render_template("ajouter_livre.html")
 
@@ -113,8 +128,9 @@ def modifier_livre(livre_id):
             livre_id,
         ))
         conn.commit()
+        sous_type = request.form["sous_type"]
         conn.close()
-        return redirect(url_for(".livres"))
+        return redirect(url_for(".livres_categorie", sous_type=sous_type))
     livre = conn.execute("SELECT * FROM livres WHERE id = ?", (livre_id,)).fetchone()
     conn.close()
     return render_template("modifier_livre.html", livre=livre)
@@ -123,9 +139,12 @@ def modifier_livre(livre_id):
 @livres_bp.route("/supprimer/<int:livre_id>", methods=["POST"])
 def supprimer_livre(livre_id):
     conn = get_db()
+    livre = conn.execute("SELECT sous_type FROM livres WHERE id = ?", (livre_id,)).fetchone()
     conn.execute("DELETE FROM livres WHERE id = ?", (livre_id,))
     conn.commit()
     conn.close()
+    if livre:
+        return redirect(url_for(".livres_categorie", sous_type=livre["sous_type"]))
     return redirect(url_for(".livres"))
 
 

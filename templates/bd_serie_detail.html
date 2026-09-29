@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ serie }} - Médiathèque{% endblock %}
 {% block content %}
-<p><a href="/bd-mangas" class="lien-discret">{{ t('retour_bd') }}</a></p>
+<p><a href="/bd-mangas/{{ type_choisi }}" class="lien-discret">{{ t('retour') }}</a></p>
 <h1>{{ serie }}</h1>
 <p class="subtitle">{{ tomes|length }} {{ t('tomes_possedes') }}</p>
 
