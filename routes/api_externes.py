@@ -1,6 +1,7 @@
 import requests
 from flask import Blueprint, request
 from config import TMDB_API_KEY, GOOGLEBOOKS_API_KEY, DISCOGS_TOKEN
+from routes.isbn_secours import chercher_isbn_secours
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -217,6 +218,10 @@ def googlebooks_search():
         items = data.get("items", [])
 
     if not items:
+        if isbn:
+            secours = chercher_isbn_secours(isbn)
+            if secours:
+                return secours
         return {"erreur": "Aucun résultat trouvé"}, 404
 
     info = items[0].get("volumeInfo", {})
