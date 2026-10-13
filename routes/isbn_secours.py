@@ -12,7 +12,7 @@ def couverture_openlibrary(isbn):
     """URL de la couverture Open Library si elle existe, sinon None."""
     url = f"https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg"
     try:
-        r = requests.head(url + "?default=false", timeout=4, allow_redirects=True)
+        r = requests.head(url + "?default=false", timeout=3, allow_redirects=True)
         if r.status_code == 200:
             return url
     except requests.RequestException:
@@ -44,7 +44,7 @@ def chercher_isbn_bnf(isbn):
             "query": 'bib.isbn all "' + isbn + '"',
             "recordSchema": "dublincore",
             "maximumRecords": 1,
-        }, timeout=8)
+        }, timeout=6)
         racine = ET.fromstring(resp.content)
     except (requests.RequestException, ET.ParseError):
         return None
@@ -87,7 +87,7 @@ def chercher_isbn_openlibrary(isbn):
     try:
         resp = requests.get("https://openlibrary.org/api/books", params={
             "bibkeys": "ISBN:" + isbn, "format": "json", "jscmd": "data",
-        }, timeout=8)
+        }, timeout=6)
         data = resp.json().get("ISBN:" + isbn)
     except (requests.RequestException, ValueError):
         return None
@@ -109,9 +109,30 @@ def chercher_isbn_openlibrary(isbn):
     }
 
 
+def isbn13_vers_10(isbn13):
+    """978XXXXXXXXXC -> ISBN-10 équivalent (None si ce n'est pas un ISBN-13 en 978)."""
+    if len(isbn13) != 13 or not isbn13.startswith("978") or not isbn13.isdigit():
+        return None
+    base = isbn13[3:12]
+    total = sum(int(c) * (10 - n) for n, c in enumerate(base))
+    reste = (11 - total % 11) % 11
+    return base + ("X" if reste == 10 else str(reste))
+
+
 def chercher_isbn_secours(isbn):
-    """Appelée quand Google Books ne trouve rien : BnF d'abord, puis Open Library."""
+    """Appelée quand Google Books ne trouve rien : BnF (ISBN-13 puis ISBN-10), puis Open Library."""
     isbn_net = re.sub(r"[^0-9Xx]", "", isbn)
     if not isbn_net:
         return None
-    return chercher_isbn_bnf(isbn_net) or chercher_isbn_openlibrary(isbn_net)
+
+    resultat = chercher_isbn_bnf(isbn_net)
+    if not resultat:
+        isbn10 = isbn13_vers_10(isbn_net)
+        if isbn10:
+            resultat = chercher_isbn_bnf(isbn10)
+    if not resultat:
+        resultat = chercher_isbn_openlibrary(isbn_net)
+
+    if resultat:
+        resultat["isbn"] = isbn_net  # on garde l'ISBN saisi ou scanné
+    return resultat
