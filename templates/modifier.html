@@ -9,6 +9,8 @@
         <select name="type" required>
             <option value="film" {% if media.type == 'film' %}selected{% endif %}>{{ t('type_film') }}</option>
             <option value="serie" {% if media.type == 'serie' %}selected{% endif %}>{{ t('type_serie') }}</option>
+            <option value="animation" {% if media.type == 'animation' %}selected{% endif %}>{{ t('type_animation') }}</option>
+            <option value="anime" {% if media.type == 'anime' %}selected{% endif %}>{{ t('type_anime') }}</option>
             <option value="coffret" {% if media.type == 'coffret' %}selected{% endif %}>{{ t('type_coffret') }}</option>
         </select>
     </label>

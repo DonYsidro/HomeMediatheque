@@ -2,54 +2,28 @@
 {% block title %}{{ t('titre_films') }} - Médiathèque{% endblock %}
 {% block content %}
 <h1>{{ t('titre_films') }}</h1>
-<p class="subtitle">{{ series|length }} {{ t('series_titre') }} · {{ medias|length }} {{ t('medias_independants') }}</p>
+<p class="subtitle">{{ t('choisir_collection') }}</p>
 
-{% if series %}
-<h2 style="font-family: var(--font-display); margin-top: 24px;">{{ t('series_titre') }}</h2>
-<div class="grid-medias">
-    {% for s in series %}
-    <a href="/films/serie?serie={{ s.serie|urlencode }}" class="carte-media">
-        <div class="carte-affiche">
-            {% if s.affiche_url %}
-                <img src="{{ s.affiche_url }}" alt="{{ s.serie }}">
-            {% else %}
-                <span class="sans-affiche">🎬</span>
-            {% endif %}
-        </div>
-        <div class="carte-info">
-            <div class="carte-titre">{{ s.serie }}</div>
-            <div class="badge-lieu">🎬 {{ s.tomes_possedes }} {{ t('medias_pluriel') }}</div>
-            {% if s.un_prete %}
-                <div class="badge-prete">{{ t('prete') }}</div>
-            {% endif %}
-        </div>
+<div class="grid-hub">
+    <a href="/films/categorie/film" class="carte-hub">
+        <span class="hub-icone">🎬</span>
+        <span class="hub-titre">{{ t('cat_film') }}</span>
+        <span class="hub-compte">{{ compteurs.film }} {{ t('medias_pluriel') }}</span>
     </a>
-    {% endfor %}
-</div>
-{% endif %}
-
-<h2 style="font-family: var(--font-display); margin-top: 24px;">{{ t('medias_independants') }}</h2>
-<div class="grid-medias">
-    {% for m in medias %}
-    <a href="/voir/{{ m.id }}" class="carte-media">
-        <div class="carte-affiche">
-            {% if m.affiche_url %}
-                <img src="{{ m.affiche_url }}" alt="{{ m.titre }}">
-            {% else %}
-                <span class="sans-affiche">🎬</span>
-            {% endif %}
-        </div>
-        <div class="carte-info">
-            <div class="carte-titre">{{ m.titre }}</div>
-            <div class="carte-meta">{{ t('type_' + m.type) }}{% if m.annee %} · {{ m.annee }}{% endif %}</div>
-            <div class="badge-lieu">📍 {{ m.lieu_stockage }}</div>
-            {% if m.est_prete %}
-                <div class="badge-prete">{{ t('prete') }}{% if m.prete_a %} {{ t('a_prefixe') }} {{ m.prete_a }}{% endif %}</div>
-            {% else %}
-                <div class="badge-dispo">{{ t('disponible') }}</div>
-            {% endif %}
-        </div>
+    <a href="/films/categorie/serie" class="carte-hub">
+        <span class="hub-icone">📺</span>
+        <span class="hub-titre">{{ t('cat_serie') }}</span>
+        <span class="hub-compte">{{ compteurs.serie }} {{ t('medias_pluriel') }}</span>
     </a>
-    {% endfor %}
+    <a href="/films/categorie/animation" class="carte-hub">
+        <span class="hub-icone">🎨</span>
+        <span class="hub-titre">{{ t('cat_animation') }}</span>
+        <span class="hub-compte">{{ compteurs.animation }} {{ t('medias_pluriel') }}</span>
+    </a>
+    <a href="/films/categorie/anime" class="carte-hub">
+        <span class="hub-icone">⛩️</span>
+        <span class="hub-titre">{{ t('cat_anime') }}</span>
+        <span class="hub-compte">{{ compteurs.anime }} {{ t('medias_pluriel') }}</span>
+    </a>
 </div>
 {% endblock %}

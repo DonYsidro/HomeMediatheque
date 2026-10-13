@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, abort
 from database import get_db
 from utils import valeur_image
 
@@ -13,10 +13,44 @@ def ajouter_personne(conn, media_id, nom, role):
                  (media_id, personne_id, role))
 
 
+CATEGORIES_VALIDES = ["film", "serie", "animation", "anime"]
+
+
+def types_de_categorie(cat):
+    # les anciens "coffrets" sont rangés avec les films
+    return ("film", "coffret") if cat == "film" else (cat,)
+
+
+def url_categorie(type_media):
+    cat = type_media if type_media in CATEGORIES_VALIDES else "film"
+    return url_for("films.films_categorie", type_choisi=cat)
+
+
 @films_bp.route("/films")
 def films():
     conn = get_db()
-    tous = conn.execute("SELECT * FROM medias ORDER BY serie, titre").fetchall()
+    compteurs = {}
+    for cat in CATEGORIES_VALIDES:
+        types = types_de_categorie(cat)
+        marqueurs = ",".join("?" * len(types))
+        compteurs[cat] = conn.execute(
+            f"SELECT COUNT(*) FROM medias WHERE type IN ({marqueurs})", types
+        ).fetchone()[0]
+    conn.close()
+    return render_template("films.html", compteurs=compteurs)
+
+
+@films_bp.route("/films/categorie/<type_choisi>")
+def films_categorie(type_choisi):
+    if type_choisi not in CATEGORIES_VALIDES:
+        abort(404)
+
+    types = types_de_categorie(type_choisi)
+    marqueurs = ",".join("?" * len(types))
+    conn = get_db()
+    tous = conn.execute(
+        f"SELECT * FROM medias WHERE type IN ({marqueurs}) ORDER BY serie, titre", types
+    ).fetchall()
     conn.close()
 
     series = {}
@@ -40,16 +74,28 @@ def films():
             individuels.append(m)
 
     liste_series = sorted(series.values(), key=lambda s: s["serie"])
-    return render_template("films.html", series=liste_series, medias=individuels)
+    return render_template("films_categorie.html", series=liste_series, medias=individuels, type_choisi=type_choisi)
 
 
 @films_bp.route("/films/serie")
 def films_serie_detail():
     serie = request.args.get("serie", "")
+    cat = request.args.get("cat", "")
     conn = get_db()
-    membres = conn.execute("SELECT * FROM medias WHERE serie = ? ORDER BY annee, titre", (serie,)).fetchall()
+    if cat in CATEGORIES_VALIDES:
+        types = types_de_categorie(cat)
+        marqueurs = ",".join("?" * len(types))
+        membres = conn.execute(
+            f"SELECT * FROM medias WHERE serie = ? AND type IN ({marqueurs}) ORDER BY annee, titre",
+            (serie, *types),
+        ).fetchall()
+    else:
+        cat = "film"
+        membres = conn.execute(
+            "SELECT * FROM medias WHERE serie = ? ORDER BY annee, titre", (serie,)
+        ).fetchall()
     conn.close()
-    return render_template("films_serie_detail.html", membres=membres, serie=serie)
+    return render_template("films_serie_detail.html", membres=membres, serie=serie, type_choisi=cat)
 
 
 @films_bp.route("/ajouter", methods=["GET", "POST"])
@@ -100,7 +146,7 @@ def ajouter():
 
         conn.commit()
         conn.close()
-        return redirect(url_for("index"))
+        return redirect(url_categorie(request.form["type"]))
 
     conn.close()
     return render_template("ajouter.html")
@@ -223,7 +269,7 @@ def modifier(media_id):
 
         conn.commit()
         conn.close()
-        return redirect(url_for("index"))
+        return redirect(url_categorie(request.form["type"]))
 
     media = conn.execute("SELECT * FROM medias WHERE id = ?", (media_id,)).fetchone()
 
@@ -264,10 +310,13 @@ def modifier(media_id):
 @films_bp.route("/supprimer/<int:media_id>", methods=["POST"])
 def supprimer(media_id):
     conn = get_db()
+    media = conn.execute("SELECT type FROM medias WHERE id = ?", (media_id,)).fetchone()
     conn.execute("DELETE FROM medias WHERE id = ?", (media_id,))
     conn.commit()
     conn.close()
-    return redirect(url_for("index"))
+    if media:
+        return redirect(url_categorie(media["type"]))
+    return redirect(url_for("films.films"))
 
 
 @films_bp.route("/voir/<int:media_id>")

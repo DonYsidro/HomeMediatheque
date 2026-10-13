@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ media.titre }} - Médiathèque{% endblock %}
 {% block content %}
-<p><a href="/films" class="lien-discret">{{ t('retour') }}</a></p>
+<p><a href="/films/categorie/{{ 'film' if media.type == 'coffret' else media.type }}" class="lien-discret">{{ t('retour') }}</a></p>
 <div class="carte-media" style="max-width:500px; cursor:default;">
     <div class="carte-affiche" style="aspect-ratio:2/3; max-height:400px;">
         {% if media.affiche_url %}

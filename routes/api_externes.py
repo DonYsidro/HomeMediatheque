@@ -46,9 +46,13 @@ def tmdb_search():
 
     genres = [g["nom"] if "nom" in g else g["name"] for g in detail.get("genres", [])]
 
+    type_suggere = "film" if media_type == "movie" else "serie"
+    if any(g.get("id") == 16 for g in detail.get("genres", [])):
+        type_suggere = "anime" if detail.get("original_language") == "ja" else "animation"
+
     resultat = {
         "titre": detail.get("title") or detail.get("name"),
-        "type": "film" if media_type == "movie" else "serie",
+        "type": type_suggere,
         "annee": (detail.get("release_date") or detail.get("first_air_date") or "")[:4],
         "duree_minutes": detail.get("runtime") or (detail.get("episode_run_time") or [None])[0],
         "nb_episodes": detail.get("number_of_episodes"),

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ serie }} - Médiathèque{% endblock %}
 {% block content %}
-<p><a href="/films" class="lien-discret">{{ t('retour') }}</a></p>
+<p><a href="/films/categorie/{{ type_choisi }}" class="lien-discret">{{ t('retour') }}</a></p>
 <h1>{{ serie }}</h1>
 <p class="subtitle">{{ membres|length }} {{ t('medias_pluriel') }}</p>
 

@@ -12,6 +12,8 @@
             <option value="">{{ t('tous') }}</option>
             <option value="film" {% if filtres.get('type') == 'film' %}selected{% endif %}>{{ t('type_film') }}</option>
             <option value="serie" {% if filtres.get('type') == 'serie' %}selected{% endif %}>{{ t('type_serie') }}</option>
+            <option value="animation" {% if filtres.get('type') == 'animation' %}selected{% endif %}>{{ t('type_animation') }}</option>
+            <option value="anime" {% if filtres.get('type') == 'anime' %}selected{% endif %}>{{ t('type_anime') }}</option>
             <option value="coffret" {% if filtres.get('type') == 'coffret' %}selected{% endif %}>{{ t('type_coffret') }}</option>
         </select>
     </label>

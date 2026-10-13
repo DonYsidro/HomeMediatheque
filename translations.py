@@ -1,5 +1,7 @@
 TRANSLATIONS = {
     'fr': {
+        'cat_film': 'Films', 'cat_serie': 'Séries', 'cat_animation': 'Animation', 'cat_anime': 'Animés japonais',
+        'type_animation': 'Animation', 'type_anime': 'Animé japonais',
         # Bandeau
         'accueil': 'Accueil', 'films': 'Films & Séries', 'cds': 'CD Audio',
         'livres': 'Livres', 'bd_mangas': 'BD & Manga', 'rechercher': 'Rechercher',
@@ -78,6 +80,8 @@ TRANSLATIONS = {
         'appliquer_modifs': 'Appliquer les modifications', 'lignes_maj': 'ligne(s) mise(s) à jour.',
     },
     'en': {
+        'cat_film': 'Movies', 'cat_serie': 'TV Shows', 'cat_animation': 'Animation', 'cat_anime': 'Japanese anime',
+        'type_animation': 'Animation', 'type_anime': 'Japanese anime',
         'accueil': 'Home', 'films': 'Movies & TV Shows', 'cds': 'Music CDs',
         'livres': 'Books', 'bd_mangas': 'Comics & Manga', 'rechercher': 'Search',
         'ajouter': '+ Add', 'sauvegarde': 'Backup', 'retour': '← Back', 'genres_label': 'Genres', 'realisateurs_label': 'Director(s)',
