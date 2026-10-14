@@ -52,7 +52,7 @@ async function chercherGoogleBooks() {
         if (!resp.ok) { statut.textContent = data.erreur || "Erreur de recherche."; return; }
         document.getElementById("champ-titre").value = data.titre || titre;
         document.getElementById("champ-isbn").value = data.isbn || isbn;
-        document.querySelector('[name="auteur"]').value = data.auteur || "";
+        document.querySelector('[name="auteur"]').value = data.auteur || document.querySelector('[name="auteur"]').value;
         document.querySelector('[name="annee"]').value = data.annee || "";
         document.querySelector('[name="editeur"]').value = data.editeur || "";
         document.querySelector('[name="langue"]').value = data.langue || "";

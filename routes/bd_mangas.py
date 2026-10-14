@@ -48,6 +48,8 @@ def bd_categorie(type_choisi):
             series[cle]["un_prete"] = True
         if not series[cle]["couverture_url"] and item["couverture_url"]:
             series[cle]["couverture_url"] = item["couverture_url"]
+        if not series[cle]["auteur"] and item["auteur"]:
+            series[cle]["auteur"] = item["auteur"]
 
     liste_series = sorted(series.values(), key=lambda s: s["serie"])
     return render_template("bd_categorie.html", series=liste_series, type_choisi=type_choisi, nb_total=len(tous))
@@ -101,13 +103,14 @@ def modifier_bd(item_id):
     conn = get_db()
     if request.method == "POST":
         conn.execute("""
-            UPDATE bd_mangas SET titre=?, serie=?, type=?, numero_tome=?, nb_tomes_serie=?,
+            UPDATE bd_mangas SET titre=?, serie=?, auteur=?, type=?, numero_tome=?, nb_tomes_serie=?,
                                   annee=?, editeur=?, isbn=?, langue=?, synopsis=?, couverture_url=?,
                                   lieu_stockage=?, est_prete=?, prete_a=?, date_pret=?
             WHERE id=?
         """, (
             request.form["titre"],
             request.form["serie"],
+            request.form.get("auteur") or None,
             request.form["type"],
             request.form.get("numero_tome") or None,
             request.form.get("nb_tomes_serie") or None,
