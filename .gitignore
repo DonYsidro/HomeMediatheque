@@ -6,3 +6,6 @@ mediatheque.db
 certs/
 static/uploads/*
 !static/uploads/.gitkeep
+
+data/*
+!data/.gitkeep

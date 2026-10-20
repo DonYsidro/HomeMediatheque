@@ -6,3 +6,5 @@ mediatheque.db
 certs/
 static/uploads/*
 .git/
+
+data/

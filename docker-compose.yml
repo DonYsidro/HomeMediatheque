@@ -5,7 +5,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./mediatheque.db:/app/mediatheque.db
+      - ./data:/app/data
       - ./static/uploads:/app/static/uploads
       - ./certs:/app/certs
     env_file:
