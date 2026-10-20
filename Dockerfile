@@ -9,4 +9,5 @@ COPY . .
 
 EXPOSE 5000
 
+ENTRYPOINT ["sh", "/app/entrypoint.sh"]
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "--certfile=/app/certs/cert.pem", "--keyfile=/app/certs/key.pem", "app:app"]
