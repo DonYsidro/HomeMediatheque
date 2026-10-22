@@ -14,11 +14,38 @@ def get_db():
     return conn
 
 
+def mettre_a_niveau(conn, schema_sql):
+    """Ajoute les colonnes présentes dans schema.sql mais absentes de la base (ajout uniquement)."""
+    modele = sqlite3.connect(":memory:")
+    modele.executescript(schema_sql)
+    tables = [r[0] for r in modele.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
+    for table in tables:
+        existantes = {r[1] for r in conn.execute("PRAGMA table_info(" + table + ")")}
+        if not existantes:
+            continue  # table absente : elle sera créée par schema.sql
+        for cid, nom, type_, notnull, defaut, pk in modele.execute("PRAGMA table_info(" + table + ")"):
+            if nom in existantes:
+                continue
+            if pk or (notnull and defaut is None):
+                print("Attention : colonne " + table + "." + nom
+                      + " non ajoutée (obligatoire sans valeur par défaut) : à ajouter à la main.")
+                continue
+            sql = "ALTER TABLE " + table + " ADD COLUMN " + nom + " " + type_
+            if defaut is not None and not defaut.upper().startswith("CURRENT_"):
+                sql += " DEFAULT " + defaut
+            conn.execute(sql)
+            print("Colonne ajoutée : " + table + "." + nom)
+    modele.close()
+
+
 def init_db():
-    """Crée les tables à partir de schema.sql si elles n'existent pas encore."""
-    conn = get_db()
+    """Met la base à niveau, puis crée les tables manquantes à partir de schema.sql."""
     with open(os.path.join(BASE_DIR, "schema.sql"), "r", encoding="utf-8") as f:
-        conn.executescript(f.read())
+        schema_sql = f.read()
+    conn = get_db()
+    mettre_a_niveau(conn, schema_sql)
+    conn.executescript(schema_sql)
     conn.commit()
     conn.close()
     print("Base de données initialisée avec succès (" + DATABASE + ").")
