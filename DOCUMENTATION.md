@@ -19,7 +19,7 @@ Application web familiale (Flask + SQLite, dockerisée) permettant de cataloguer
 
 ### Stack
 - **Backend** : Python 3.11 / Flask, servi par Gunicorn (2 workers)
-- **Base de données** : SQLite (fichier unique `mediatheque.db`)
+- **Base de données** : SQLite (fichier unique `data/mediatheque.db`)
 - **Frontend** : templates Jinja2 (HTML/CSS/JS), pas de framework JS
 - **Conteneurisation** : Docker + Docker Compose
 - **HTTPS** : certificat auto-signé (nécessaire pour l'accès caméra sur mobile)
@@ -61,7 +61,7 @@ mediatheque/
 
 ### Tables principales
 
-- **`medias`** : films, séries, coffrets. Un coffret est une entrée `type='coffret'` ; les films qu'il contient pointent vers lui via `coffret_id`.
+- **`medias`** : films, séries, animation et animés japonais (champ `type`). Le regroupement se fait par le champ texte `serie`. La colonne `coffret_id` n'est plus utilisée, mais elle est conservée pour rester compatible avec les anciennes données et sauvegardes.
 - **`genres`** / **`medias_genres`** : relation many-to-many (un film peut avoir plusieurs genres)
 - **`personnes`** / **`medias_personnes`** : réalisateurs/acteurs/compositeurs, avec un rôle par ligne de liaison
 - **`cds`** : albums, avec regroupement par `artiste` calculé à l'affichage (pas de table séparée)
@@ -72,7 +72,7 @@ mediatheque/
 `lieu_stockage`, `est_prete`, `prete_a`, `date_pret` (suivi des prêts), `date_ajout`.
 
 ### Modifier le schéma plus tard
-Toujours utiliser `ALTER TABLE ... ADD COLUMN` sur la base existante (`docker compose exec mediatheque python3 -c "..."`), **et** reporter le changement dans `schema.sql` pour qu'une réinstallation from scratch inclue la colonne dès le départ. Les deux étapes sont nécessaires — l'une ne remplace pas l'autre.
+Il suffit de modifier `schema.sql` (en ajoutant la colonne à un seul endroit), puis de reconstruire le conteneur : au démarrage, `database.py` ajoute automatiquement les colonnes manquantes à la base existante, et une installation neuve les inclut dès le départ. Seul l'**ajout** de colonnes est automatique ; renommer ou supprimer une colonne reste une opération manuelle, à faire avec une sauvegarde.
 
 ---
 
@@ -108,7 +108,7 @@ Le fichier `.env.example` sert de modèle (sans vraies valeurs) pour toute réin
 
 ### Fichiers clés
 - **`Dockerfile`** : image `python:3.11-slim`, installe `requirements.txt`, copie le code, lance Gunicorn avec HTTPS.
-- **`docker-compose.yml`** : monte en volumes `mediatheque.db`, `static/uploads/`, `certs/` — ces trois éléments **survivent** à une reconstruction de l'image (`docker compose up -d --build`), car ils ne sont jamais copiés dans l'image elle-même (exclus via `.dockerignore`).
+- **`docker-compose.yml`** : monte en volumes `data/` (qui contient la base `mediatheque.db`), `static/uploads/`, `certs/` — ces trois éléments **survivent** à une reconstruction de l'image (`docker compose up -d --build`), car ils ne sont jamais copiés dans l'image elle-même (exclus via `.dockerignore`).
 
 ### Cycle de mise à jour du code
 ```bash
@@ -117,7 +117,7 @@ docker compose up -d --build
 ```
 
 ### Déplacer l'application vers un autre serveur
-1. Copier tout le dossier du projet **avec** `mediatheque.db`, `static/uploads/`, `certs/`, `.env` (ces 4 éléments ne sont pas dans Git, il faut les transférer à la main — `scp` ou via le NAS)
+1. Copier tout le dossier du projet **avec** `data/` (qui contient la base), `static/uploads/`, `certs/`, `.env` (ces 4 éléments ne sont pas dans Git, il faut les transférer à la main — `scp` ou via le NAS)
 2. Régénérer le certificat HTTPS avec la nouvelle IP (voir section 7)
 3. `docker compose up -d --build` sur la nouvelle machine
 
@@ -167,7 +167,7 @@ Tout se passe depuis la page **Sauvegarde**, accessible en permanence dans le ba
 ## 10. Fonctionnalités par catégorie
 
 ### Films & Séries
-Recherche auto via TMDB, genres/réalisateurs/acteurs/compositeurs en relations many-to-many, gestion de coffrets (un coffret = une entrée, les films qu'il contient y sont rattachés individuellement), recherche multi-critères dédiée (`/recherche`).
+Recherche auto via TMDB, genres/réalisateurs/acteurs/compositeurs en relations many-to-many, 4 catégories (films, séries, animation, animés japonais) avec regroupement par série via un champ texte libre, recherche multi-critères dédiée (`/recherche`).
 
 ### CD Audio
 Recherche auto via Discogs (titre+artiste, ou code-barre), scan caméra du code-barre, liste des pistes, regroupement automatique par artiste sur la page principale.

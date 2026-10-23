@@ -16,7 +16,7 @@ Application web familiale (Flask + SQLite, dockerisée) pour cataloguer une coll
 - Recherche multi-critères (âge, genre, type, durée, lieu de stockage...)
 - Remplissage automatique des fiches via TMDB (films/séries), Discogs (CD), Google Books (livres/BD/manga)
 - Scan de code-barres (ISBN) via la caméra pour les livres/BD/manga, code-barre produit pour les CD
-- Regroupement par coffret (films), série (livres/BD), artiste (CD)
+- Films & séries classés en 4 catégories (films, séries, animation, animés japonais) ; regroupement par série (films, livres, BD/manga) et par artiste (CD)
 - Suivi des prêts (à qui, depuis quand)
 - Photos personnalisées (prise directe ou import) en plus des couvertures/affiches trouvées en ligne
 - Export/import complet (JSON + photos) et export CSV pour consultation/modification dans un tableur
@@ -81,7 +81,7 @@ Après avoir modifié le code :
 ```bash
 docker compose up -d --build
 ```
-Les données (`mediatheque.db`, `static/uploads/`, `certs/`) sont montées en volumes et ne sont jamais perdues lors d'une reconstruction.
+Les données (`data/` qui contient la base, `static/uploads/`, `certs/`) sont montées en volumes et ne sont jamais perdues lors d'une reconstruction.
 
 ### Stack technique
 
@@ -96,7 +96,7 @@ Python / Flask / SQLite / Gunicorn / Docker · External APIs: TMDB, Discogs, Goo
 - Multi-criteria search (age rating, genre, type, duration, storage location...)
 - Auto-fill via TMDB (movies/TV), Discogs (CDs), Google Books (books/comics/manga)
 - Barcode (ISBN) scanning via camera for books/comics/manga, product barcode for CDs
-- Grouping by box set (movies), series (books/comics), artist (CDs)
+- Movies & TV shows sorted into 4 categories (movies, TV shows, animation, Japanese anime); grouping by series (movies, books, comics/manga) and by artist (CDs)
 - Loan tracking (who, since when)
 - Custom photos (camera capture or upload) alongside online covers/posters
 - Full export/import (JSON + photos) and CSV export for spreadsheet editing
@@ -161,7 +161,7 @@ After modifying the code:
 ```bash
 docker compose up -d --build
 ```
-Data (`mediatheque.db`, `static/uploads/`, `certs/`) is mounted as volumes and is never lost on rebuild.
+Data (`data/` holding the database, `static/uploads/`, `certs/`) is mounted as volumes and is never lost on rebuild.
 
 ### Tech stack
 
