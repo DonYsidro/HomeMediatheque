@@ -9,3 +9,24 @@ static/uploads/*
 
 data/*
 !data/.gitkeep
+
+# Fichiers locaux et sauvegardes
+.env*
+!.env.example
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.zip
+*.tar
+*.tar.gz
+*.backup*
+*.avant-*
+__pycache__/
+.pytest_cache/
+.coverage
+
+# Dossiers et configurations de test
+compose.test.yml
+test-import/
+sauvegardes-securite/

@@ -30,5 +30,7 @@
         <span class="badge-dispo">{{ t('disponible') }}</span>
     {% endif %}
 </p>
+{% if session.get('admin_connecte') %}
 <a href="/bd-mangas/modifier/{{ item.id }}" class="btn">✏️ {{ t('modifier') }}</a>
+{% endif %}
 {% endblock %}

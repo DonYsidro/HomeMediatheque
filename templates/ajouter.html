@@ -3,6 +3,7 @@
 {% block content %}
 <h1>{{ t('ajouter_bouton') }} - {{ t('type_film') }}</h1>
 <form method="POST" action="/ajouter" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>{{ t('titre_champ') }} * <input type="text" name="titre" id="champ-titre" required></label>
     <button type="button" onclick="chercherTMDB()">{{ t('chercher_infos') }}</button>
     <span id="statut-recherche"></span>

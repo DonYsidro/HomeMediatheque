@@ -3,6 +3,7 @@
 {% block content %}
 <h1>Ajouter un livre</h1>
 <form method="POST" action="/livres/ajouter" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>Titre * <input type="text" name="titre" id="champ-titre" required></label>
     <label>ISBN (optionnel, recherche plus précise) <input type="text" name="isbn" id="champ-isbn"></label>
     <button type="button" onclick="chercherGoogleBooks()">🔍 Chercher les infos</button>

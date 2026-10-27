@@ -3,6 +3,7 @@
 {% block content %}
 <h1>{{ t('modifier') }} : {{ item.titre }}</h1>
 <form method="POST" action="/bd-mangas/modifier/{{ item.id }}" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>{{ t('serie_champ') }} * <input type="text" name="serie" id="champ-serie" value="{{ item.serie or item.titre }}" required></label>
     <label>{{ t('titre_du_tome') }} <input type="text" name="titre" id="champ-titre" value="{{ item.titre or '' }}"></label>
 
@@ -41,6 +42,7 @@
 </form>
 
 <form method="POST" action="/bd-mangas/supprimer/{{ item.id }}" onsubmit="return confirm('{{ t('confirmer_suppression') }}');" style="margin-top: 16px;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn-danger">{{ t('supprimer') }}</button>
 </form>
 

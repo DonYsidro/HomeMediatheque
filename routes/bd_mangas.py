@@ -1,3 +1,4 @@
+from admin_security import admin_requis
 from flask import Blueprint, render_template, request, redirect, url_for, abort
 from database import get_db
 from utils import valeur_image
@@ -68,6 +69,7 @@ def bd_serie_detail():
 
 
 @bd_bp.route("/ajouter", methods=["GET", "POST"])
+@admin_requis
 def ajouter_bd():
     conn = get_db()
     if request.method == "POST":
@@ -99,6 +101,7 @@ def ajouter_bd():
 
 
 @bd_bp.route("/modifier/<int:item_id>", methods=["GET", "POST"])
+@admin_requis
 def modifier_bd(item_id):
     conn = get_db()
     if request.method == "POST":
@@ -136,6 +139,7 @@ def modifier_bd(item_id):
 
 
 @bd_bp.route("/supprimer/<int:item_id>", methods=["POST"])
+@admin_requis
 def supprimer_bd(item_id):
     conn = get_db()
     item = conn.execute("SELECT type FROM bd_mangas WHERE id = ?", (item_id,)).fetchone()

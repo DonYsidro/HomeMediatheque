@@ -26,19 +26,35 @@
     <header class="site-header">
         <div class="sprocket-strip"></div>
         <div class="header-inner">
-            <a href="/" class="logo">🎬 La Médiathèque</a>
-            <a href="/sauvegarde" class="lien-discret" style="margin-left: -12px;">💾 {{ t('sauvegarde') }}</a>
-            <span style="margin-left: 8px;">
-                <a href="/langue/fr" style="opacity: {{ '1' if lang_actuelle == 'fr' else '0.4' }};">🇫🇷</a>
-                <a href="/langue/en" style="opacity: {{ '1' if lang_actuelle == 'en' else '0.4' }};">🇬🇧</a>
-            </span>
+<a href="/" class="logo">🎬 La Médiathèque</a>
+
+{% if session.get('admin_connecte') %}
+<a href="/sauvegarde" class="lien-discret" style="margin-left: -12px;">
+    💾 {{ t('sauvegarde') }}
+</a>
+<form method="POST" action="{{ url_for('admin.deconnexion') }}" style="display: inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit">Déconnexion</button>
+</form>
+{% else %}
+<a href="{{ url_for('admin.connexion') }}" class="lien-discret" style="margin-left: -12px;">
+    🔐 Administration
+</a>
+{% endif %}
+
+<span style="margin-left: 8px;">
+    <a href="/langue/fr" style="opacity: {{ '1' if lang_actuelle == 'fr' else '0.4' }};">🇫🇷</a>
+    <a href="/langue/en" style="opacity: {{ '1' if lang_actuelle == 'en' else '0.4' }};">🇬🇧</a>
+</span>
             {% if ns.active %}
             <nav>
                 {% for s in sections %}
                     {% if s != ns.active %}<a href="{{ s.url }}">{{ t(s.cle) }}</a>{% endif %}
                 {% endfor %}
-                {% if ns.active.recherche %}<a href="{{ ns.active.recherche }}">{{ t('rechercher') }}</a>{% endif %}
-                <a href="{{ ns.active.ajouter }}" class="nav-cta">{{ t('ajouter') }}</a>
+{% if ns.active.recherche %}<a href="{{ ns.active.recherche }}">{{ t('rechercher') }}</a>{% endif %}
+{% if session.get('admin_connecte') %}
+<a href="{{ ns.active.ajouter }}" class="nav-cta">{{ t('ajouter') }}</a>
+{% endif %}
             </nav>
             {% endif %}
         </div>

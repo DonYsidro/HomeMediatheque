@@ -1,9 +1,52 @@
-from flask import Flask, render_template, request, redirect, url_for, make_response
+import os
+import time
+from datetime import timedelta
+
+from flask import Flask, render_template, request, redirect, url_for, make_response, session
 from database import get_db
 from translations import TRANSLATIONS
+from dotenv import load_dotenv
+from flask_wtf.csrf import CSRFProtect
+
+load_dotenv()
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
+app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(
+    minutes=int(os.environ.get("ADMIN_SESSION_MINUTES", "30"))
+)
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get(
+    "SESSION_COOKIE_SECURE", "false"
+).lower() == "true"
 
+csrf = CSRFProtect()
+csrf.init_app(app)
+
+@app.before_request
+def verifier_expiration_admin():
+    if not session.get("admin_connecte"):
+        return None
+
+    if request.endpoint == "static":
+        return None
+
+    maintenant = time.time()
+    derniere_activite = session.get("admin_derniere_activite")
+    delai_max = app.permanent_session_lifetime.total_seconds()
+
+    if (
+        not isinstance(derniere_activite, (int, float))
+        or maintenant - derniere_activite > delai_max
+    ):
+        session.clear()
+        return redirect(
+            url_for("admin.connexion", next=request.path)
+        )
+
+    session["admin_derniere_activite"] = maintenant
 
 def get_lang():
     return request.cookies.get("lang", "fr")
@@ -44,6 +87,7 @@ from routes.livres import livres_bp
 from routes.bd_mangas import bd_bp
 from routes.api_externes import api_bp
 from routes.sauvegarde import sauvegarde_bp
+from routes.admin import admin_bp
 
 app.register_blueprint(films_bp)
 app.register_blueprint(cds_bp)
@@ -51,7 +95,7 @@ app.register_blueprint(livres_bp)
 app.register_blueprint(bd_bp)
 app.register_blueprint(api_bp)
 app.register_blueprint(sauvegarde_bp)
-
+app.register_blueprint(admin_bp)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)

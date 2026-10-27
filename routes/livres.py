@@ -1,3 +1,4 @@
+from admin_security import admin_requis
 from flask import Blueprint, render_template, request, redirect, url_for, abort
 from database import get_db
 from utils import valeur_image
@@ -69,6 +70,7 @@ def livres_serie_detail():
 
 
 @livres_bp.route("/ajouter", methods=["GET", "POST"])
+@admin_requis
 def ajouter_livre():
     conn = get_db()
     if request.method == "POST":
@@ -100,6 +102,7 @@ def ajouter_livre():
 
 
 @livres_bp.route("/modifier/<int:livre_id>", methods=["GET", "POST"])
+@admin_requis
 def modifier_livre(livre_id):
     conn = get_db()
     if request.method == "POST":
@@ -137,6 +140,7 @@ def modifier_livre(livre_id):
 
 
 @livres_bp.route("/supprimer/<int:livre_id>", methods=["POST"])
+@admin_requis
 def supprimer_livre(livre_id):
     conn = get_db()
     livre = conn.execute("SELECT sous_type FROM livres WHERE id = ?", (livre_id,)).fetchone()

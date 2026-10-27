@@ -1,3 +1,4 @@
+from admin_security import admin_requis
 from flask import Blueprint, render_template, request, redirect, url_for
 from database import get_db
 from utils import valeur_image
@@ -40,6 +41,7 @@ def cds_artiste_detail():
 
 
 @cds_bp.route("/ajouter", methods=["GET", "POST"])
+@admin_requis
 def ajouter_cd():
     conn = get_db()
     if request.method == "POST":
@@ -67,6 +69,7 @@ def ajouter_cd():
 
 
 @cds_bp.route("/modifier/<int:cd_id>", methods=["GET", "POST"])
+@admin_requis
 def modifier_cd(cd_id):
     conn = get_db()
     if request.method == "POST":
@@ -100,6 +103,7 @@ def modifier_cd(cd_id):
 
 
 @cds_bp.route("/supprimer/<int:cd_id>", methods=["POST"])
+@admin_requis
 def supprimer_cd(cd_id):
     conn = get_db()
     conn.execute("DELETE FROM cds WHERE id = ?", (cd_id,))

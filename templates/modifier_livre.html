@@ -3,6 +3,7 @@
 {% block content %}
 <h1>{{ t('modifier') }} : {{ livre.titre }}</h1>
 <form method="POST" action="/livres/modifier/{{ livre.id }}" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>{{ t('titre_champ') }} * <input type="text" name="titre" id="champ-titre" value="{{ livre.titre }}" required></label>
 
     <label>{{ t('type_champ') }} *
@@ -44,6 +45,7 @@
 </form>
 
 <form method="POST" action="/livres/supprimer/{{ livre.id }}" onsubmit="return confirm('{{ t('confirmer_suppression') }}');" style="margin-top: 16px;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn-danger">{{ t('supprimer') }}</button>
 </form>
 

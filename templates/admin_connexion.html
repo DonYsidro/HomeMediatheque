@@ -1,0 +1,33 @@
+```html
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 420px; margin: 3rem auto;">
+    <h1>Connexion administrateur</h1>
+
+    {% if erreur %}
+    <p role="alert" class="message-erreur">{{ erreur }}</p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('admin.connexion') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label for="pin">Code PIN administrateur</label>
+        <input
+            type="password"
+            id="pin"
+            name="pin"
+            inputmode="numeric"
+            pattern="[0-9]+"
+            minlength="6"
+            maxlength="32"
+            autocomplete="current-password"
+            required
+            autofocus
+        >
+
+        <button type="submit">Se connecter</button>
+    </form>
+</div>
+{% endblock %}
+```

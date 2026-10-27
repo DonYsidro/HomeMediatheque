@@ -105,3 +105,14 @@ CREATE TABLE IF NOT EXISTS bd_mangas (
     date_pret TEXT,
     date_ajout TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS admin_security (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    failed_attempts INTEGER NOT NULL DEFAULT 0,
+    lock_level INTEGER NOT NULL DEFAULT 0,
+    locked_until TEXT,
+    last_attempt_at TEXT
+);
+
+INSERT OR IGNORE INTO admin_security (id)
+VALUES (1);

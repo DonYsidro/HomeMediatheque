@@ -15,6 +15,7 @@
 <h2 style="font-family: var(--font-display); margin-top:32px;">{{ t('restaurer') }}</h2>
 <p class="subtitle" style="color: #e88a9a;">{{ t('restaurer_attention') }}</p>
 <form method="POST" action="/sauvegarde/importer" enctype="multipart/form-data" onsubmit="return confirm('{{ t('confirmer_restauration') }}');">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>{{ t('fichier_sauvegarde') }} <input type="file" name="fichier_sauvegarde" accept=".zip" required></label>
     <button type="submit" class="btn-danger">{{ t('restaurer_bouton') }}</button>
 </form>
@@ -22,6 +23,7 @@
 <h2 style="font-family: var(--font-display); margin-top:32px;">{{ t('maj_masse') }}</h2>
 <p class="subtitle">{{ t('maj_masse_desc') }}</p>
 <form method="POST" action="/sauvegarde/importer_csv" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>{{ t('table_concernee') }}
         <select name="table" required>
             <option value="medias">{{ t('titre_films') }}</option>

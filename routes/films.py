@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, abort
 from database import get_db
 from utils import valeur_image
+from admin_security import admin_requis
 
 films_bp = Blueprint("films", __name__)
 
@@ -99,6 +100,7 @@ def films_serie_detail():
 
 
 @films_bp.route("/ajouter", methods=["GET", "POST"])
+@admin_requis
 def ajouter():
     conn = get_db()
 
@@ -220,6 +222,7 @@ def recherche():
 
 
 @films_bp.route("/modifier/<int:media_id>", methods=["GET", "POST"])
+@admin_requis
 def modifier(media_id):
     conn = get_db()
 
@@ -308,6 +311,7 @@ def modifier(media_id):
 
 
 @films_bp.route("/supprimer/<int:media_id>", methods=["POST"])
+@admin_requis
 def supprimer(media_id):
     conn = get_db()
     media = conn.execute("SELECT type FROM medias WHERE id = ?", (media_id,)).fetchone()

@@ -4,7 +4,9 @@
 <p><a href="/bd-mangas" class="lien-discret">{{ t('retour') }}</a></p>
 <h1>{{ t('type_' + type_choisi) }}</h1>
 <p class="subtitle">{{ series|length }} {{ t('series_titre') }} · {{ nb_total }} {{ t('tomes_pluriel') }}</p>
+{% if session.get('admin_connecte') %}
 <p><a href="/bd-mangas/ajouter" class="btn">{{ t('ajouter_bd') }}</a></p>
+{% endif %}
 
 <div class="grid-medias">
     {% for s in series %}

@@ -33,5 +33,7 @@
         <span class="badge-dispo">{{ t('disponible') }}</span>
     {% endif %}
 </p>
+{% if session.get('admin_connecte') %}
 <a href="/cds/modifier/{{ cd.id }}" class="btn">✏️ {{ t('modifier') }}</a>
+{% endif %}
 {% endblock %}

@@ -3,7 +3,9 @@
 {% block content %}
 <h1>{{ t('titre_cds') }}</h1>
 <p class="subtitle">{{ artistes|length }} {{ t('artiste') }} · {{ nb_total }} {{ t('albums_pluriel') }}</p>
+{% if session.get('admin_connecte') %}
 <p><a href="/cds/ajouter" class="btn">{{ t('ajouter_cd') }}</a></p>
+{% endif %}
 
 {% if artistes %}
 <div class="grid-medias">

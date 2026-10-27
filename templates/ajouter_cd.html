@@ -3,6 +3,7 @@
 {% block content %}
 <h1>{{ t('ajouter_cd') }}</h1>
 <form method="POST" action="/cds/ajouter" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>{{ t('titre_album') }} * <input type="text" name="titre" id="champ-titre" required></label>
     <label>{{ t('artiste') }} <input type="text" name="artiste"></label>
     <button type="button" onclick="chercherDiscogs()">{{ t('chercher_infos') }}</button>

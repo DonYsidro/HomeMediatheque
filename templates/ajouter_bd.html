@@ -3,6 +3,7 @@
 {% block content %}
 <h1>{{ t('ajouter_bd_titre_page') }}</h1>
 <form method="POST" action="/bd-mangas/ajouter" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>{{ t('serie_obligatoire') }} <input type="text" name="serie" id="champ-serie" required></label>
     <label>{{ t('titre_du_tome') }} <input type="text" name="titre" id="champ-titre"></label>
     <label>{{ t('isbn') }} <input type="text" name="isbn" id="champ-isbn"></label>

@@ -4,7 +4,9 @@
 <p><a href="/films" class="lien-discret">{{ t('retour') }}</a></p>
 <h1>{{ t('cat_' + type_choisi) }}</h1>
 <p class="subtitle">{{ series|length }} {{ t('series_titre') }} · {{ medias|length }} {{ t('medias_independants') }}</p>
+{% if session.get('admin_connecte') %}
 <p><a href="/ajouter" class="btn">{{ t('ajouter') }}</a></p>
+{% endif %}
 
 {% if series %}
 <h2 style="font-family: var(--font-display); margin-top: 24px;">{{ t('series_titre') }}</h2>
