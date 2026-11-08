@@ -10,7 +10,7 @@
 </head>
 <body>
     {% set sections = [
-        {'cle': 'films', 'url': '/films', 'ajouter': '/ajouter', 'recherche': '/recherche', 'prefixes': ['/films', '/ajouter', '/recherche', '/modifier/', '/supprimer/']},
+        {'cle': 'films', 'url': '/films', 'ajouter': '/ajouter', 'prefixes': ['/films', '/ajouter', '/modifier/', '/supprimer/']},
         {'cle': 'cds', 'url': '/cds', 'ajouter': '/cds/ajouter', 'prefixes': ['/cds']},
         {'cle': 'livres', 'url': '/livres', 'ajouter': '/livres/ajouter', 'prefixes': ['/livres']},
         {'cle': 'bd_mangas', 'url': '/bd-mangas', 'ajouter': '/bd-mangas/ajouter', 'prefixes': ['/bd-mangas']}
@@ -27,6 +27,10 @@
         <div class="sprocket-strip"></div>
         <div class="header-inner">
 <a href="/" class="logo">🎬 La Médiathèque</a>
+
+<form method="GET" action="/chercher" class="recherche-rapide">
+    <input type="search" name="q" placeholder="{{ t('placeholder_recherche_globale') }}" aria-label="{{ t('rechercher') }}">
+</form>
 
 {% if session.get('admin_connecte') %}
 <a href="/sauvegarde" class="lien-discret" style="margin-left: -12px;">
@@ -51,7 +55,6 @@
                 {% for s in sections %}
                     {% if s != ns.active %}<a href="{{ s.url }}">{{ t(s.cle) }}</a>{% endif %}
                 {% endfor %}
-{% if ns.active.recherche %}<a href="{{ ns.active.recherche }}">{{ t('rechercher') }}</a>{% endif %}
 {% if session.get('admin_connecte') %}
 <a href="{{ ns.active.ajouter }}" class="nav-cta">{{ t('ajouter') }}</a>
 {% endif %}

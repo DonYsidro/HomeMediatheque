@@ -44,6 +44,14 @@ TRANSLATIONS = {
         'coffret': 'Coffret', 'serie_type': 'Série', 'film_type': 'Film',
 
         # Recherche
+        'placeholder_recherche_globale': 'Chercher dans toute la collection…',
+        'saisir_recherche': 'Tape un mot (titre, auteur, artiste, série, genre, année, lieu…) pour chercher dans toute la collection.',
+        'aucun_resultat': 'Aucun résultat',
+        'resultats_limites': 'affichage limité à', 'erreur_recherche': 'La recherche a échoué, réessaie.',
+        'type_cd': 'CD Audio', 'type_livre': 'Livre',
+        'categorie_champ': 'Catégorie', 'toutes_categories': 'Toutes les catégories',
+        'age_enfant': 'Convient à un enfant de', 'tous_ages': 'tous âges', 'tous_publics': 'Tous publics', 'age_ans': 'ans',
+        'age_info_films': "Le filtre d'âge ne concerne que les Films & Séries : les autres catégories sont masquées.",
         'titre_recherche': 'Recherche', 'filtre_par_critere': 'Filtre ta collection par critère',
         'duree_max': 'Durée max (minutes)', 'resultats': 'résultat(s)', 'modifier': 'Modifier',        'retour': '← Retour', 'genres_label': 'Genres', 'realisateurs_label': 'Réalisateur(s)',
         'acteurs_label': 'Acteurs', 'compositeurs_label': 'Compositeur(s)',
@@ -118,6 +126,14 @@ TRANSLATIONS = {
         'titre_films': 'Movies & TV Shows', 'media_catalogue': 'item(s) in the catalog',
         'coffret': 'Box set', 'serie_type': 'TV Show', 'film_type': 'Movie',
 
+        'placeholder_recherche_globale': 'Search the whole collection…',
+        'saisir_recherche': 'Type a word (title, author, artist, series, genre, year, location…) to search the whole collection.',
+        'aucun_resultat': 'No results',
+        'resultats_limites': 'display limited to', 'erreur_recherche': 'Search failed, please try again.',
+        'type_cd': 'Music CD', 'type_livre': 'Book',
+        'categorie_champ': 'Category', 'toutes_categories': 'All categories',
+        'age_enfant': 'Suitable for a child of', 'tous_ages': 'any age', 'tous_publics': 'All audiences', 'age_ans': 'years old',
+        'age_info_films': "The age filter only applies to Movies & TV Shows: other categories are hidden.",
         'titre_recherche': 'Search', 'filtre_par_critere': 'Filter your collection by criteria',
         'duree_max': 'Max duration (minutes)', 'resultats': 'result(s)', 'modifier': 'Edit',
 

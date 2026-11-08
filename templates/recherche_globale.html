@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ t('titre_recherche') }} - Médiathèque{% endblock %}
+{% block content %}
+<h1>{{ t('titre_recherche') }}</h1>
+
+<form method="GET" action="/chercher" id="form-recherche" class="recherche-page">
+    <input type="search" name="q" id="champ-q" value="{{ q }}" autocomplete="off" autofocus
+           placeholder="{{ t('placeholder_recherche_globale') }}" aria-label="{{ t('rechercher') }}">
+
+    <select name="cat" id="filtre-cat" aria-label="{{ t('categorie_champ') }}">
+        <option value="">{{ t('toutes_categories') }}</option>
+        {% for cle, libelle in categories %}
+        <option value="{{ cle }}" {% if cat == cle %}selected{% endif %}>{{ t(libelle) }}</option>
+        {% endfor %}
+    </select>
+
+    {# Filtre d'âge mis de côté : voir FILTRE_AGE_ACTIF dans routes/recherche.py #}
+    {% if filtre_age_actif %}
+    <select name="age" id="filtre-age" aria-label="{{ t('age_enfant') }}">
+        <option value="">{{ t('age_enfant') }} : {{ t('tous_ages') }}</option>
+        {% for a in ages %}
+        <option value="{{ a }}" {% if age == a %}selected{% endif %}>
+            {{ t('age_enfant') }} : {% if a == 0 %}{{ t('tous_publics') }}{% else %}{{ a }} {{ t('age_ans') }}{% endif %}
+        </option>
+        {% endfor %}
+    </select>
+    {% endif %}
+
+    <button type="submit">{{ t('rechercher') }}</button>
+</form>
+
+<div id="resultats" aria-live="polite" data-erreur="{{ t('erreur_recherche') }}">
+    {% include "_resultats_recherche.html" %}
+</div>
+
+<script>
+// Recherche instantanée : on attend 350 ms après la dernière frappe, puis on ne recharge que les résultats.
+// Sans JavaScript, le bouton « Rechercher » fonctionne toujours (envoi classique du formulaire).
+(function () {
+    const DELAI_MS = 350;
+    const form = document.getElementById("form-recherche");
+    const zone = document.getElementById("resultats");
+    let minuteur = null;
+    let requete = null;
+
+    async function lancer() {
+        const params = new URLSearchParams(new FormData(form));
+        history.replaceState(null, "", "/chercher?" + params.toString());  // adresse partageable / actualisable
+        params.set("partiel", "1");
+
+        if (requete) requete.abort();  // une réponse plus ancienne ne doit pas écraser la plus récente
+        requete = new AbortController();
+        zone.classList.add("chargement");
+        try {
+            const reponse = await fetch("/chercher?" + params.toString(), { signal: requete.signal });
+            if (!reponse.ok) throw new Error("HTTP " + reponse.status);
+            zone.innerHTML = await reponse.text();
+            zone.classList.remove("chargement");
+        } catch (erreur) {
+            if (erreur.name === "AbortError") return;  // remplacée par une requête plus récente
+            zone.classList.remove("chargement");
+            zone.innerHTML = '<p class="subtitle"></p>';
+            zone.firstChild.textContent = zone.dataset.erreur;
+        }
+    }
+
+    form.elements["q"].addEventListener("input", function () {
+        clearTimeout(minuteur);
+        minuteur = setTimeout(lancer, DELAI_MS);
+    });
+    // Le filtre d'âge (s'il est activé) ne concerne que Films & Séries : grisé pour les autres catégories
+    function majFiltreAge() {
+        const age = form.elements["age"];
+        if (!age) return;
+        const ok = ["", "film", "serie", "animation", "anime"].includes(form.elements["cat"].value);
+        age.disabled = !ok;
+        if (!ok) age.value = "";
+    }
+    majFiltreAge();
+    form.elements["cat"].addEventListener("change", function () { majFiltreAge(); lancer(); });
+    if (form.elements["age"]) form.elements["age"].addEventListener("change", lancer);
+    form.addEventListener("submit", function (evenement) {  // Entrée ou bouton : recherche immédiate
+        evenement.preventDefault();
+        clearTimeout(minuteur);
+        lancer();
+    });
+})();
+</script>
+{% endblock %}

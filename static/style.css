@@ -268,3 +268,54 @@ hr {
     color: var(--text-muted);
     font-size: 0.85rem;
 }
+
+/* Recherche globale */
+.recherche-rapide input[type="search"] {
+    width: 260px;
+    max-width: 100%;
+    padding: 6px 12px;
+    border-radius: 999px;
+}
+
+.recherche-page {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.recherche-page input[type="search"] {
+    flex: 1 1 100%;
+    width: auto;
+    margin: 0;
+}
+
+.recherche-page select {
+    flex: 1 1 220px;
+    width: auto;
+    margin: 0;
+}
+
+.recherche-page button {
+    margin: 0;
+}
+
+/* Badge de catégorie sur les cartes de la recherche */
+.badge-categorie {
+    align-self: flex-start;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    margin-bottom: 4px;
+}
+.cat-films { color: #e8a53a; background: rgba(232, 165, 58, 0.14); }
+.cat-cds { color: #7bbcf0; background: rgba(123, 188, 240, 0.14); }
+.cat-livres { color: #8fd3a0; background: rgba(143, 211, 160, 0.14); }
+.cat-bd_mangas { color: #d9a0ea; background: rgba(217, 160, 234, 0.14); }
+
+/* Recherche instantanée : résultats atténués pendant le chargement */
+#resultats { transition: opacity 0.15s; }
+#resultats.chargement { opacity: 0.5; }

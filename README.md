@@ -145,7 +145,7 @@ Utilise la même adresse IP que celle indiquée dans le certificat. Selon le nav
 
 - La page de connexion administrateur est accessible à `/admin/connexion`.
 - La déconnexion est effectuée via `/admin/deconnexion`.
-- Les fonctions de modification et les opérations sensibles protégées par l'application nécessitent une session administrateur.
+- L'ajout, la modification et la suppression de fiches, ainsi que la page Sauvegarde (export et import), nécessitent une session administrateur. La consultation et la recherche restent ouvertes à toute personne ayant accès au réseau local.
 - Le PIN est vérifié à partir de son hash scrypt ; il n'est pas nécessaire de stocker le PIN en clair.
 - Après plusieurs tentatives incorrectes, des blocages progressifs sont appliqués : 30 minutes, puis 2 heures, puis 24 heures aux paliers suivants.
 - `ADMIN_SESSION_MINUTES` définit la durée de validité de la session administrateur.
@@ -322,7 +322,7 @@ Use the same IP address included in the certificate. Depending on the browser, y
 
 - The administrator login page is available at `/admin/connexion`.
 - Log out through `/admin/deconnexion`.
-- Protected editing functions and sensitive operations require an administrator session.
+- Adding, editing and deleting entries, as well as the Backup page (export and import), require an administrator session. Browsing and searching remain open to anyone with access to the local network.
 - The PIN is checked against a scrypt hash; storing the PIN in plaintext is not required.
 - Repeated incorrect attempts trigger progressive lockouts: 30 minutes, then 2 hours, then 24 hours at subsequent levels.
 - `ADMIN_SESSION_MINUTES` sets the administrator session lifetime.

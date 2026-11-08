@@ -88,6 +88,7 @@ from routes.bd_mangas import bd_bp
 from routes.api_externes import api_bp
 from routes.sauvegarde import sauvegarde_bp
 from routes.admin import admin_bp
+from routes.recherche import recherche_bp
 
 app.register_blueprint(films_bp)
 app.register_blueprint(cds_bp)
@@ -96,6 +97,7 @@ app.register_blueprint(bd_bp)
 app.register_blueprint(api_bp)
 app.register_blueprint(sauvegarde_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(recherche_bp)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)

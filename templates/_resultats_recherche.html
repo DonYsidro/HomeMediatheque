@@ -1,0 +1,42 @@
+{# Zone des résultats : incluse dans la page, et renvoyée seule par la recherche instantanée (?partiel=1) #}
+{% if not q %}
+    <p class="subtitle">{{ t('saisir_recherche') }}</p>
+{% elif fiches|length == 0 %}
+    <p class="subtitle">{{ t('aucun_resultat') }}</p>
+{% else %}
+    <p class="subtitle">
+        {{ fiches|length }} {{ t('resultats') }}{% if tronque %} · {{ t('resultats_limites') }} {{ max_resultats }}{% endif %}
+    </p>
+    {% if age is not none and not cat %}
+        <p class="subtitle">{{ t('age_info_films') }}</p>
+    {% endif %}
+    <div class="grid-medias">
+        {% for r in fiches %}
+        <a href="{{ r.url }}" class="carte-media">
+            <div class="carte-affiche">
+                {% if r.image %}
+                    <img src="{{ r.image }}" alt="{{ r.titre }}" loading="lazy">
+                {% else %}
+                    <span class="sans-affiche">{{ r.icone }}</span>
+                {% endif %}
+            </div>
+            <div class="carte-info">
+                <div class="badge-categorie cat-{{ r.famille }}">{{ r.icone }} {{ t(r.categorie_cle) }}</div>
+                <div class="carte-titre">{{ r.titre }}</div>
+                {% if r.serie %}<div class="carte-meta">{{ r.serie }}</div>{% endif %}
+                <div class="carte-meta">
+                    {% if r.detail_cle %}{{ t(r.detail_cle) }}{% endif %}
+                    {% if r.auteur %}{% if r.detail_cle %} · {% endif %}{{ r.auteur }}{% endif %}
+                    {% if r.annee %}{% if r.detail_cle or r.auteur %} · {% endif %}{{ r.annee }}{% endif %}
+                </div>
+                <div class="badge-lieu">📍 {{ r.lieu_stockage }}</div>
+                {% if r.est_prete %}
+                    <div class="badge-prete">{{ t('prete') }}{% if r.prete_a %} {{ t('a_prefixe') }} {{ r.prete_a }}{% endif %}</div>
+                {% else %}
+                    <div class="badge-dispo">{{ t('disponible') }}</div>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% endif %}
